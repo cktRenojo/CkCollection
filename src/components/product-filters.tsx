@@ -6,11 +6,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 
 const categories = ['All', 'Women', 'Men', 'New Arrivals', 'Best Sellers'];
+const subCategories = ['All', 'Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
 const sizes = ['All', 'XS', 'S', 'M', 'L', 'XL'];
 
 interface ProductFiltersProps {
   filters: {
     category: string;
+    subCategory: string;
     price: number[];
     size: string;
   };
@@ -20,6 +22,10 @@ interface ProductFiltersProps {
 export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
   const handleCategoryChange = (value: string) => {
     setFilters((prev: any) => ({ ...prev, category: value }));
+  };
+
+  const handleSubCategoryChange = (value: string) => {
+    setFilters((prev: any) => ({ ...prev, subCategory: value }));
   };
 
   const handlePriceChange = (value: number[]) => {
@@ -45,6 +51,19 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
             <SelectContent>
               {categories.map((category) => (
                 <SelectItem key={category} value={category}>{category}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="sub-category">Sub-Category</Label>
+          <Select value={filters.subCategory} onValueChange={handleSubCategoryChange}>
+            <SelectTrigger id="sub-category">
+              <SelectValue placeholder="Select a sub-category" />
+            </SelectTrigger>
+            <SelectContent>
+              {subCategories.map((subCategory) => (
+                <SelectItem key={subCategory} value={subCategory}>{subCategory}</SelectItem>
               ))}
             </SelectContent>
           </Select>
