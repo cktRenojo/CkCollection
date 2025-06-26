@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { Product, ProductCategory, ProductSubCategory } from '@/lib/types';
+import type { Product, ProductCategory, ProductSubCategory, ProductSize } from '@/lib/types';
 import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trash2, UploadCloud, LogOut } from 'lucide-react';
@@ -24,9 +24,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useProducts } from '@/hooks/use-products';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Best Sellers'];
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
+const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
+
 
 export default function AdminPage() {
   const router = useRouter();
@@ -89,6 +92,12 @@ export default function AdminPage() {
         toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
         return;
     }
+
+    const selectedSizes = formData.getAll('sizes') as ProductSize[];
+    if (selectedSizes.length === 0) {
+      toast({ title: 'Sizes Required', description: 'Please select at least one size for the product.', variant: 'destructive' });
+      return;
+    }
     
     const newProduct: Omit<Product, 'id'> = {
       name: formData.get('name') as string,
@@ -97,7 +106,7 @@ export default function AdminPage() {
       subCategory: formData.get('subCategory') as ProductSubCategory,
       description: formData.get('description') as string,
       images: [imagePreview],
-      sizes: ['S', 'M', 'L'],
+      sizes: selectedSizes,
       dataAiHint: 'fashion apparel',
     };
     
@@ -222,6 +231,20 @@ export default function AdminPage() {
                         {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
                     </SelectContent>
                     </Select>
+                </div>
+                
+                <div className="space-y-2">
+                    <Label>Available Sizes</Label>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
+                      {allSizes.map((size) => (
+                        <div key={size} className="flex items-center space-x-2">
+                          <Checkbox id={`size-add-${size}`} name="sizes" value={size} />
+                          <Label htmlFor={`size-add-${size}`} className="font-normal cursor-pointer">
+                            {size}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
                 </div>
                 
                 <DialogFooter>
