@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import type { Product, ProductCategory, ProductSubCategory } from '@/lib/types';
 import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, UploadCloud } from 'lucide-react';
+import { Trash2, UploadCloud, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -24,12 +25,22 @@ import { useProducts } from '@/hooks/use-products';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 
-const ADMIN_PASSWORD = 'password123';
-
 const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Best Sellers'];
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
 
-function AdminDashboard() {
+export default function AdminPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  useEffect(() => {
+    const authStatus = typeof window !== 'undefined' ? localStorage.getItem('isAdminAuthenticated') : null;
+    if (authStatus !== 'true') {
+      router.push('/login');
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [router]);
+  
   const { products, addProduct, removeProduct, loading } = useProducts();
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subCategoryFilter, setSubCategoryFilter] = useState('All');
@@ -37,6 +48,11 @@ function AdminDashboard() {
   const [newProductImage, setNewProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const handleLogout = () => {
+    localStorage.removeItem('isAdminAuthenticated');
+    router.push('/login');
+  };
 
   const handleFileChange = (file: File | null) => {
     if (file) {
@@ -117,94 +133,107 @@ function AdminDashboard() {
   }, [products, categoryFilter, subCategoryFilter]);
 
 
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto px-4 py-8 md:py-12 space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold font-headline">Manage Products</h2>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>Add Product</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
-              <DialogDescription>Fill in the details for the new product.</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddProduct} className="space-y-4">
-               <div className="space-y-2">
-                <Label>Product Image</Label>
-                <div 
-                  className="mt-2 flex justify-center rounded-lg border border-dashed border-input px-6 py-10"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                >
-                  <div className="text-center">
-                    {imagePreview ? (
-                      <Image src={imagePreview} alt="Product preview" width={100} height={100} className="mx-auto h-24 w-24 object-contain rounded-md" />
-                    ) : (
-                      <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
-                    )}
-                    <div className="mt-4 flex text-sm leading-6 text-muted-foreground">
-                      <Label
-                        htmlFor="file-upload"
-                        className="relative cursor-pointer rounded-md bg-background font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:text-primary/80"
-                      >
-                        <span>Upload a file</span>
-                        <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)} />
-                      </Label>
-                      <p className="pl-1">or drag and drop</p>
+        <div className="flex items-center gap-4">
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+                <Button>Add Product</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                <DialogTitle>Add New Product</DialogTitle>
+                <DialogDescription>Fill in the details for the new product.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddProduct} className="space-y-4">
+                <div className="space-y-2">
+                    <Label>Product Image</Label>
+                    <div 
+                    className="mt-2 flex justify-center rounded-lg border border-dashed border-input px-6 py-10"
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    >
+                    <div className="text-center">
+                        {imagePreview ? (
+                        <Image src={imagePreview} alt="Product preview" width={100} height={100} className="mx-auto h-24 w-24 object-contain rounded-md" />
+                        ) : (
+                        <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
+                        )}
+                        <div className="mt-4 flex text-sm leading-6 text-muted-foreground">
+                        <Label
+                            htmlFor="file-upload"
+                            className="relative cursor-pointer rounded-md bg-background font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:text-primary/80"
+                        >
+                            <span>Upload a file</span>
+                            <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)} />
+                        </Label>
+                        <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs leading-5 text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
                     </div>
-                    <p className="text-xs leading-5 text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
-                  </div>
+                    </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="name">Product Name</Label>
-                <Input id="name" name="name" required />
-              </div>
-              
-               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea id="description" name="description" required placeholder="Describe the product" />
-              </div>
+                <div className="space-y-2">
+                    <Label htmlFor="name">Product Name</Label>
+                    <Input id="name" name="name" required />
+                </div>
+                
+                <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea id="description" name="description" required placeholder="Describe the product" />
+                </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Price</Label>
-                    <Input id="price" name="price" type="number" step="0.01" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Select name="category" required>
-                      <SelectTrigger id="category">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                      </SelectContent>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="price">Price</Label>
+                        <Input id="price" name="price" type="number" step="0.01" required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="category">Category</Label>
+                        <Select name="category" required>
+                        <SelectTrigger id="category">
+                            <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {allCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                        </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                
+                <div className="space-y-2">
+                    <Label htmlFor="subCategory">Sub-Category</Label>
+                    <Select name="subCategory" required>
+                    <SelectTrigger id="subCategory">
+                        <SelectValue placeholder="Select sub-category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
+                    </SelectContent>
                     </Select>
-                  </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="subCategory">Sub-Category</Label>
-                <Select name="subCategory" required>
-                  <SelectTrigger id="subCategory">
-                    <SelectValue placeholder="Select sub-category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <DialogFooter>
-                <Button type="submit">Add Product</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                </div>
+                
+                <DialogFooter>
+                    <Button type="submit">Add Product</Button>
+                </DialogFooter>
+                </form>
+            </DialogContent>
+            </Dialog>
+            <Button variant="outline" size="icon" onClick={handleLogout} aria-label="Log out">
+                <LogOut className="h-4 w-4" />
+            </Button>
+        </div>
       </div>
       
       <Card>
@@ -286,59 +315,6 @@ function AdminDashboard() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      setError('');
-    } else {
-      setError('Incorrect password. Please try again.');
-    }
-  };
-
-  if (isAuthenticated) {
-    return (
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        <AdminDashboard />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl font-headline">Bakal Ako</CardTitle>
-          <CardDescription>Enter the password to manage the store.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
-          </form>
         </CardContent>
       </Card>
     </div>
