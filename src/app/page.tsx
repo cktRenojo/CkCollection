@@ -12,7 +12,6 @@ export default function Home() {
   const [filters, setFilters] = useState({
     category: 'All',
     subCategory: 'All',
-    price: [0, 500],
     size: 'All',
   });
 
@@ -20,9 +19,8 @@ export default function Home() {
     return allProducts.filter((product) => {
       const categoryMatch = filters.category === 'All' || product.category === filters.category;
       const subCategoryMatch = filters.subCategory === 'All' || product.subCategory === filters.subCategory;
-      const priceMatch = product.price >= filters.price[0] && product.price <= filters.price[1];
       const sizeMatch = filters.size === 'All' || product.sizes.includes(filters.size as any);
-      return categoryMatch && subCategoryMatch && priceMatch && sizeMatch;
+      return categoryMatch && subCategoryMatch && sizeMatch;
     });
   }, [allProducts, filters]);
 
