@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { products as initialProducts } from '@/lib/data';
 import type { Product, ProductCategory, ProductSubCategory } from '@/lib/types';
 import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -21,6 +20,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useProducts } from '@/hooks/use-products';
 
 const ADMIN_PASSWORD = 'password123';
 
@@ -28,7 +28,7 @@ const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Best 
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
 
 function AdminDashboard() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const { products, addProduct, removeProduct } = useProducts();
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subCategoryFilter, setSubCategoryFilter] = useState('All');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -83,16 +83,17 @@ function AdminDashboard() {
       sizes: ['S', 'M', 'L'],
       dataAiHint: 'fashion apparel',
     };
-    setProducts((prev) => [newProduct, ...prev]);
+    addProduct(newProduct);
     toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
 
     // Reset form and close dialog
     setIsAddDialogOpen(false);
-    handleFileChange(null);
+    setNewProductImage(null);
+    setImagePreview(null);
   };
 
   const handleRemoveProduct = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    removeProduct(id);
     toast({ title: 'Product Removed', description: 'The product has been removed.', variant: 'destructive' });
   };
 
@@ -191,12 +192,12 @@ function AdminDashboard() {
       </div>
       
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
+        <CardHeader className="p-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Label htmlFor="category-filter">Category</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger id="category-filter" className="w-[180px]">
+                  <SelectTrigger id="category-filter" className="w-auto sm:w-[180px]">
                       <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -208,7 +209,7 @@ function AdminDashboard() {
             <div className="flex items-center gap-2">
               <Label htmlFor="subcategory-filter">Sub-Category</Label>
               <Select value={subCategoryFilter} onValueChange={setSubCategoryFilter}>
-                  <SelectTrigger id="subcategory-filter" className="w-[180px]">
+                  <SelectTrigger id="subcategory-filter" className="w-auto sm:w-[180px]">
                       <SelectValue placeholder="Filter by sub-category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -223,7 +224,7 @@ function AdminDashboard() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Image</TableHead>
+                <TableHead className="w-16 hidden sm:table-cell">Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Sub-Category</TableHead>
@@ -234,7 +235,7 @@ function AdminDashboard() {
             <TableBody>
               {filteredProducts.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <Image src={product.images[0]} alt={product.name} width={40} height={53} className="rounded-md object-cover" data-ai-hint={product.dataAiHint} />
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
@@ -273,14 +274,14 @@ export default function AdminPage() {
 
   if (isAuthenticated) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         <AdminDashboard />
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Admin Access</CardTitle>

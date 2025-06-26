@@ -1,4 +1,6 @@
-import { products } from '@/lib/data';
+'use client';
+
+import { useProducts } from '@/hooks/use-products';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,6 +16,7 @@ import { AiRecommendations } from '@/components/ai-recommendations';
 import { Separator } from '@/components/ui/separator';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const { products } = useProducts();
   const product = products.find((p) => p.id === params.id);
 
   if (!product) {
@@ -21,14 +24,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
         <div>
           <Carousel className="w-full">
             <CarouselContent>
               {product.images.map((img, index) => (
                 <CarouselItem key={index}>
-                  <Card className="overflow-hidden">
+                  <Card className="overflow-hidden rounded-xl">
                     <CardContent className="p-0">
                       <div className="relative aspect-[3/4] w-full">
                         <Image
@@ -36,6 +39,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                           alt={`${product.name} image ${index + 1}`}
                           fill
                           className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 50vw"
                           data-ai-hint={product.dataAiHint}
                         />
                       </div>
