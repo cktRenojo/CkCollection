@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
   { href: '/', label: 'Women' },
@@ -34,6 +35,12 @@ export default function Header() {
   const { cartCount } = useCart();
   const { user, logout, isAuthenticated, loading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
@@ -66,7 +73,7 @@ export default function Header() {
                   Hi, {user?.displayName || 'User'}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
@@ -132,7 +139,7 @@ export default function Header() {
                 </nav>
                  <div className="mt-auto pt-6 border-t">
                   {isAuthenticated ? (
-                     <Button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full">
+                     <Button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="w-full">
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Log out</span>
                       </Button>

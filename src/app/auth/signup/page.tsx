@@ -9,10 +9,12 @@ import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
   const { signup } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,6 +30,7 @@ export default function SignupPage() {
     try {
       await signup(name, email, password);
       toast({ title: 'Success', description: 'Your account has been created.' });
+      router.push('/');
     } catch (error: any) {
       console.error(error);
       let errorMessage = 'An unknown error occurred.';

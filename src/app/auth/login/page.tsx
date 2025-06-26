@@ -10,9 +10,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 export default function UserLoginPage() {
   const { login } = useAuth();
+  const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,6 +30,7 @@ export default function UserLoginPage() {
     try {
       await login(email, password);
       toast({ title: 'Success', description: 'You have been logged in.' });
+      router.push('/');
     } catch (error: any) {
       console.error(error);
       let errorMessage = 'An unknown error occurred.';
