@@ -144,7 +144,7 @@ export default function AdminPage() {
       description: newProductDescription,
       category: newProductCategory as ProductCategory,
       subCategory: newProductSubCategory as ProductSubCategory,
-      images: [imagePreview],
+      images: ['https://placehold.co/600x800'],
       sizes: newProductSizes,
       dataAiHint: 'fashion apparel',
     };
@@ -268,7 +268,7 @@ export default function AdminPage() {
                 
                 <div className="space-y-2">
                     <Label htmlFor="subCategory">Sub-Category</Label>
-                    <Select name="subCategory" required value={newProductSubCategory} onValueChange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
+                    <Select name="subCategory" required value={newProductSubCategory} onValuechange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
                     <SelectTrigger id="subCategory">
                         <SelectValue placeholder="Select sub-category" />
                     </SelectTrigger>
@@ -398,3 +398,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+    
