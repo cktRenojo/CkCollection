@@ -37,7 +37,7 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background px-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Bakal Ako</CardTitle>
+          <CardTitle className="text-2xl font-headline">C&K Collections</CardTitle>
           <CardDescription>Admin Portal Login</CardDescription>
         </CardHeader>
         <CardContent>
