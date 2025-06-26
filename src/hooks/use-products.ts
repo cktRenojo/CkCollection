@@ -1,10 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, deleteDoc, doc, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { products as initialProducts } from '@/lib/data';
 
 interface ProductsContextType {
   products: Product[];
@@ -24,28 +23,6 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     if (typeof window === 'undefined') return;
 
     const productsCollectionRef = collection(db, 'products');
-
-    // --- Seed database with initial data if it's empty ---
-    const seedDatabase = async () => {
-        try {
-            const snapshot = await getDocs(productsCollectionRef);
-            if (snapshot.empty) {
-                console.log("Database is empty. Seeding initial products...");
-                const batch = writeBatch(db);
-                initialProducts.forEach((product) => {
-                    // Use the ID from our static data file for consistency
-                    const docRef = doc(db, 'products', product.id);
-                    batch.set(docRef, product);
-                });
-                await batch.commit();
-                console.log("Database seeded successfully.");
-            }
-        } catch (error) {
-            console.error("Error seeding database: ", error);
-        }
-    };
-    
-    seedDatabase();
 
     // --- Listen for real-time updates ---
     const unsubscribe = onSnapshot(productsCollectionRef, (snapshot) => {

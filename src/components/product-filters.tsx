@@ -1,12 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const categories = ['All', 'Women', 'Men', 'New Arrivals', 'Best Sellers'];
-const subCategories = ['All', 'Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
-const sizes = ['All', 'XS', 'S', 'M', 'L', 'XL'];
+import { useProducts } from '@/hooks/use-products';
+import type { ProductSize } from '@/lib/types';
 
 interface ProductFiltersProps {
   filters: {
@@ -18,8 +17,36 @@ interface ProductFiltersProps {
 }
 
 export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
+  const { products } = useProducts();
+
+  const categories = useMemo(() => {
+    if (!products.length) return ['All'];
+    const uniqueCategories = [...new Set(products.map((p) => p.category))];
+    return ['All', ...uniqueCategories.sort()];
+  }, [products]);
+
+  const subCategories = useMemo(() => {
+    if (!products.length) return ['All'];
+    const filteredProducts =
+      filters.category === 'All'
+        ? products
+        : products.filter((p) => p.category === filters.category);
+    const uniqueSubCategories = [...new Set(filteredProducts.map((p) => p.subCategory))];
+    return ['All', ...uniqueSubCategories.sort()];
+  }, [products, filters.category]);
+
+  const sizes = useMemo(() => {
+    if (!products.length) return ['All'];
+    const allSizes = products.flatMap((p) => p.sizes);
+    const uniqueSizes = [...new Set(allSizes)];
+    const sortOrder: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
+    uniqueSizes.sort((a, b) => sortOrder.indexOf(a) - sortOrder.indexOf(b));
+    return ['All', ...uniqueSizes];
+  }, [products]);
+
+
   const handleCategoryChange = (value: string) => {
-    setFilters((prev: any) => ({ ...prev, category: value }));
+    setFilters((prev: any) => ({ ...prev, category: value, subCategory: 'All' }));
   };
 
   const handleSubCategoryChange = (value: string) => {
@@ -51,7 +78,7 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="sub-category">Sub-Category</Label>
-          <Select value={filters.subCategory} onValueChange={handleSubCategoryChange}>
+          <Select value={filters.subCategory} onValueChange={handleSubCategoryChange} disabled={subCategories.length <= 1}>
             <SelectTrigger id="sub-category">
               <SelectValue placeholder="Select a sub-category" />
             </SelectTrigger>

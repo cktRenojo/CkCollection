@@ -63,6 +63,18 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { toast } = useToast();
+
+  const availableCategories = useMemo(() => {
+    if (!products.length) return [];
+    const uniqueCategories = [...new Set(products.map((p) => p.category))];
+    return uniqueCategories.sort();
+  }, [products]);
+
+  const availableSubCategories = useMemo(() => {
+    if (!products.length) return [];
+    const uniqueSubCategories = [...new Set(products.map((p) => p.subCategory))];
+    return uniqueSubCategories.sort();
+  }, [products]);
   
   const handleLogout = () => {
     localStorage.removeItem('isAdminAuthenticated');
@@ -108,7 +120,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddProduct = async () => {
+  const handleAddProduct = () => {
     if (!newProductImage || !imagePreview) {
         toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
         return;
@@ -140,27 +152,26 @@ export default function AdminPage() {
     }
     
     setIsSubmitting(true);
-    try {
-      const newProduct: Omit<Product, 'id'> = {
-        name: newProductName,
-        price: priceValue,
-        description: newProductDescription,
-        category: newProductCategory as ProductCategory,
-        subCategory: newProductSubCategory as ProductSubCategory,
-        images: ['https://placehold.co/600x800'],
-        sizes: newProductSizes,
-        dataAiHint: 'fashion apparel',
-      };
-      
-      await addProduct(newProduct);
+    const newProduct: Omit<Product, 'id'> = {
+      name: newProductName,
+      price: priceValue,
+      description: newProductDescription,
+      category: newProductCategory as ProductCategory,
+      subCategory: newProductSubCategory as ProductSubCategory,
+      images: ['https://placehold.co/600x800'],
+      sizes: newProductSizes,
+      dataAiHint: 'fashion apparel',
+    };
+    
+    addProduct(newProduct).then(() => {
       toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
       setIsAddDialogOpen(false);
-    } catch (error) {
+    }).catch((error) => {
       console.error("Failed to add product:", error);
       toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
-    } finally {
+    }).finally(() => {
       setIsSubmitting(false);
-    }
+    });
   };
 
   const handleRemoveProduct = async (id: string) => {
@@ -331,7 +342,7 @@ export default function AdminPage() {
                   </SelectTrigger>
                   <SelectContent>
                       <SelectItem value="All">All Categories</SelectItem>
-                      {allCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                      {availableCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                   </SelectContent>
               </Select>
             </div>
@@ -343,7 +354,7 @@ export default function AdminPage() {
                   </SelectTrigger>
                   <SelectContent>
                       <SelectItem value="All">All Sub-Categories</SelectItem>
-                      {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
+                      {availableSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
                   </SelectContent>
               </Select>
             </div>
