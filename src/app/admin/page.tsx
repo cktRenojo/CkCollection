@@ -50,6 +50,7 @@ export default function AdminPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newProductImage, setNewProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [newProductSizes, setNewProductSizes] = useState<ProductSize[]>([]);
   const { toast } = useToast();
   
   const handleLogout = () => {
@@ -93,8 +94,7 @@ export default function AdminPage() {
         return;
     }
 
-    const selectedSizes = formData.getAll('sizes') as ProductSize[];
-    if (selectedSizes.length === 0) {
+    if (newProductSizes.length === 0) {
       toast({ title: 'Sizes Required', description: 'Please select at least one size for the product.', variant: 'destructive' });
       return;
     }
@@ -106,7 +106,7 @@ export default function AdminPage() {
       subCategory: formData.get('subCategory') as ProductSubCategory,
       description: formData.get('description') as string,
       images: [imagePreview],
-      sizes: selectedSizes,
+      sizes: newProductSizes,
       dataAiHint: 'fashion apparel',
     };
     
@@ -114,8 +114,6 @@ export default function AdminPage() {
       await addProduct(newProduct);
       toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
       setIsAddDialogOpen(false);
-      setNewProductImage(null);
-      setImagePreview(null);
       event.currentTarget.reset();
     } catch (error) {
       console.error("Failed to add product:", error);
@@ -155,7 +153,17 @@ export default function AdminPage() {
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold font-headline">Manage Products</h2>
         <div className="flex items-center gap-4">
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <Dialog 
+              open={isAddDialogOpen} 
+              onOpenChange={(open) => {
+                setIsAddDialogOpen(open);
+                if (!open) {
+                  setNewProductImage(null);
+                  setImagePreview(null);
+                  setNewProductSizes([]);
+                }
+              }}
+            >
             <DialogTrigger asChild>
                 <Button>Add Product</Button>
             </DialogTrigger>
@@ -238,7 +246,17 @@ export default function AdminPage() {
                     <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
                       {allSizes.map((size) => (
                         <div key={size} className="flex items-center space-x-2">
-                          <Checkbox id={`size-add-${size}`} name="sizes" value={size} />
+                          <Checkbox
+                            id={`size-add-${size}`}
+                            checked={newProductSizes.includes(size)}
+                            onCheckedChange={(checked) => {
+                              setNewProductSizes(prevSizes => 
+                                checked 
+                                  ? [...prevSizes, size]
+                                  : prevSizes.filter(s => s !== size)
+                              );
+                            }}
+                          />
                           <Label htmlFor={`size-add-${size}`} className="font-normal cursor-pointer">
                             {size}
                           </Label>
