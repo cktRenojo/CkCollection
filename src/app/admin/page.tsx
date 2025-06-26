@@ -105,9 +105,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddProduct = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const handleAddProduct = async () => {
     if (!newProductImage || !imagePreview) {
         toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
         return;
@@ -208,7 +206,7 @@ export default function AdminPage() {
                 <DialogTitle>Add New Product</DialogTitle>
                 <DialogDescription>Fill in the details for the new product.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddProduct} className="space-y-4">
+                <div className="space-y-4">
                 <div className="space-y-2">
                     <Label>Product Image</Label>
                     <div 
@@ -239,22 +237,22 @@ export default function AdminPage() {
 
                 <div className="space-y-2">
                     <Label htmlFor="name">Product Name</Label>
-                    <Input id="name" name="name" required value={newProductName} onChange={(e) => setNewProductName(e.target.value)} />
+                    <Input id="name" name="name" value={newProductName} onChange={(e) => setNewProductName(e.target.value)} />
                 </div>
                 
                 <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" name="description" required placeholder="Describe the product" value={newProductDescription} onChange={(e) => setNewProductDescription(e.target.value)} />
+                    <Textarea id="description" name="description" placeholder="Describe the product" value={newProductDescription} onChange={(e) => setNewProductDescription(e.target.value)} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="price">Price</Label>
-                        <Input id="price" name="price" type="number" step="0.01" required value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} />
+                        <Input id="price" name="price" type="number" step="0.01" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="category">Category</Label>
-                        <Select name="category" required value={newProductCategory} onValueChange={(value) => setNewProductCategory(value as ProductCategory)}>
+                        <Select name="category" value={newProductCategory} onValueChange={(value) => setNewProductCategory(value as ProductCategory)}>
                         <SelectTrigger id="category">
                             <SelectValue placeholder="Select category" />
                         </SelectTrigger>
@@ -267,7 +265,7 @@ export default function AdminPage() {
                 
                 <div className="space-y-2">
                     <Label htmlFor="subCategory">Sub-Category</Label>
-                    <Select name="subCategory" required value={newProductSubCategory} onValueChange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
+                    <Select name="subCategory" value={newProductSubCategory} onValueChange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
                     <SelectTrigger id="subCategory">
                         <SelectValue placeholder="Select sub-category" />
                     </SelectTrigger>
@@ -302,9 +300,9 @@ export default function AdminPage() {
                 </div>
                 
                 <DialogFooter>
-                    <Button type="submit">Add Product</Button>
+                    <Button type="button" onClick={handleAddProduct}>Add Product</Button>
                 </DialogFooter>
-                </form>
+                </div>
             </DialogContent>
             </Dialog>
             <Button variant="outline" size="icon" onClick={handleLogout} aria-label="Log out">
