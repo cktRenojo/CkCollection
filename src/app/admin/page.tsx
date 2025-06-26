@@ -153,7 +153,6 @@ export default function AdminPage() {
       await addProduct(newProduct);
       toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
       setIsAddDialogOpen(false);
-      resetFormState();
     } catch (error) {
       console.error("Failed to add product:", error);
       toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
