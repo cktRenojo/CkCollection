@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Product } from '@/lib/types';
 import { products as initialProducts } from '@/lib/data';
 
@@ -14,6 +14,33 @@ const ProductsContext = createContext<ProductsContextType | undefined>(undefined
 
 export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from localStorage on initial client-side render
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedProducts = localStorage.getItem('products');
+      if (storedProducts) {
+        try {
+          const parsedProducts = JSON.parse(storedProducts);
+          if (Array.isArray(parsedProducts)) {
+            setProducts(parsedProducts);
+          }
+        } catch (error) {
+          console.error("Failed to parse products from localStorage", error);
+        }
+      }
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Persist to localStorage whenever products change, but only after initial load
+  useEffect(() => {
+    if (isLoaded && typeof window !== 'undefined') {
+      localStorage.setItem('products', JSON.stringify(products));
+    }
+  }, [products, isLoaded]);
+
 
   const addProduct = (product: Product) => {
     setProducts((prev) => [product, ...prev]);
