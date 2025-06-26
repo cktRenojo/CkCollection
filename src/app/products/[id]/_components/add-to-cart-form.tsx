@@ -36,7 +36,7 @@ export function AddToCartForm({ product }: { product: Product }) {
         <RadioGroup
           value={selectedSize ?? ''}
           onValueChange={(value) => setSelectedSize(value as ProductSize)}
-          className="mt-2 flex items-center gap-2"
+          className="mt-4 flex items-center gap-3"
         >
           {product.sizes.map((size) => (
             <div key={size}>
@@ -44,7 +44,7 @@ export function AddToCartForm({ product }: { product: Product }) {
               <Label
                 htmlFor={`size-${size}`}
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-md border text-sm font-medium uppercase transition-colors hover:bg-accent hover:text-accent-foreground",
+                  "flex h-10 w-10 items-center justify-center rounded-md border text-sm font-medium uppercase transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer",
                   "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
                 )}
               >
@@ -56,7 +56,7 @@ export function AddToCartForm({ product }: { product: Product }) {
         {error && <p className="mt-2 text-sm font-medium text-destructive">{error}</p>}
       </div>
 
-      <Button size="lg" className="w-full md:w-auto bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleAddToCart}>
+      <Button size="lg" className="w-full md:w-auto" onClick={handleAddToCart}>
         <ShoppingBag className="mr-2 h-5 w-5" />
         Add to Cart
       </Button>

@@ -23,13 +23,18 @@ export default function Home() {
   }, [filters]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-12">
+       <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-headline font-bold mb-4">Explore the Collection</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Timeless pieces, sustainably crafted. Discover your new favorite staples from our curated collection of modern apparel.
+          </p>
+        </div>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <aside className="lg:col-span-1">
           <ProductFilters filters={filters} setFilters={setFilters} />
         </aside>
         <main className="lg:col-span-3">
-          <h1 className="text-4xl font-headline font-bold mb-6">Our Collection</h1>
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
               {filteredProducts.map((product) => (
@@ -37,8 +42,9 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <p className="text-xl text-muted-foreground">No products found matching your criteria.</p>
+            <div className="text-center py-16 flex flex-col items-center justify-center min-h-[40vh]">
+              <p className="text-2xl font-semibold">No products found</p>
+              <p className="text-lg text-muted-foreground mt-2">Try adjusting your filters to find what you're looking for.</p>
             </div>
           )}
         </main>

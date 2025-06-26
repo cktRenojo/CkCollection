@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ShoppingBag } from 'lucide-react';
+import { Separator } from './ui/separator';
 
 export function Cart() {
   const { cartItems, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
@@ -16,19 +17,21 @@ export function Cart() {
       <SheetHeader className="px-6">
         <SheetTitle>Shopping Cart ({cartCount})</SheetTitle>
       </SheetHeader>
+      <Separator className="my-2" />
       <div className="flex-1 overflow-y-auto">
         <ScrollArea className="h-full">
           <div className="px-6">
             {cartItems.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center space-y-1">
-                <p className="text-lg font-medium">Your cart is empty</p>
+              <div className="flex h-full flex-col items-center justify-center space-y-2 mt-24 text-center">
+                <ShoppingBag className="h-16 w-16 text-muted-foreground" />
+                <p className="text-xl font-medium">Your cart is empty</p>
                 <p className="text-sm text-muted-foreground">Add items to see them here.</p>
               </div>
             ) : (
               <div className="flex flex-col gap-6 py-4">
                 {cartItems.map((item) => (
                   <div key={`${item.product.id}-${item.size}`} className="flex items-start space-x-4">
-                    <div className="relative h-24 w-24 overflow-hidden rounded-md">
+                    <div className="relative h-24 w-24 overflow-hidden rounded-md border">
                       <Image
                         src={item.product.images[0]}
                         alt={item.product.name}
@@ -81,8 +84,8 @@ export function Cart() {
             <p className="text-sm text-muted-foreground">
               Shipping and taxes calculated at checkout.
             </p>
-            <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-              Proceed to Checkout (Mock)
+            <Button size="lg" className="w-full">
+              Proceed to Checkout
             </Button>
           </div>
         </SheetFooter>

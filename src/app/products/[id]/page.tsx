@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/carousel';
 import { AddToCartForm } from './_components/add-to-cart-form';
 import { AiRecommendations } from '@/components/ai-recommendations';
+import { Separator } from '@/components/ui/separator';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const product = products.find((p) => p.id === params.id);
@@ -20,21 +21,21 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+    <div className="container mx-auto px-4 py-12">
+      <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
         <div>
           <Carousel className="w-full">
             <CarouselContent>
               {product.images.map((img, index) => (
                 <CarouselItem key={index}>
-                  <Card>
+                  <Card className="overflow-hidden">
                     <CardContent className="p-0">
                       <div className="relative aspect-[3/4] w-full">
                         <Image
                           src={img}
                           alt={`${product.name} image ${index + 1}`}
                           fill
-                          className="object-cover rounded-lg"
+                          className="object-cover"
                           data-ai-hint={product.dataAiHint}
                         />
                       </div>
@@ -43,19 +44,25 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-2" />
-            <CarouselNext className="right-2" />
+            <CarouselPrevious className="left-4" />
+            <CarouselNext className="right-4" />
           </Carousel>
         </div>
-        <div className="flex flex-col justify-center">
-          <span className="text-sm font-semibold text-primary">{product.category}</span>
-          <h1 className="text-4xl lg:text-5xl font-bold font-headline mt-2">{product.name}</h1>
-          <p className="text-2xl mt-4 font-medium">₱{product.price.toFixed(2)}</p>
-          <p className="mt-6 text-muted-foreground leading-relaxed">{product.description}</p>
-          <div className="mt-8">
-            <AddToCartForm product={product} />
+        <div className="flex flex-col justify-center py-4">
+          <div className="space-y-4">
+            <span className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">{product.category}</span>
+            <h1 className="text-4xl lg:text-5xl font-bold font-headline">{product.name}</h1>
+            <p className="text-3xl font-medium text-primary">₱{product.price.toFixed(2)}</p>
+             <Separator className="my-6" />
+            <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+            <div className="pt-4">
+              <AddToCartForm product={product} />
+            </div>
           </div>
         </div>
+      </div>
+      <div className="mt-24">
+         <Separator />
       </div>
       <div className="mt-16 lg:mt-24">
         <AiRecommendations product={product} />
