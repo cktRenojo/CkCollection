@@ -9,6 +9,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800', 'https://placehold.co/600x800', 'https://placehold.co/600x800'],
     sizes: ['S', 'M', 'L'],
     category: 'Men',
+    subCategory: 'Shirt',
     dataAiHint: 'male model',
   },
   {
@@ -19,6 +20,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800', 'https://placehold.co/600x800'],
     sizes: ['XS', 'S', 'M'],
     category: 'Women',
+    subCategory: 'Blouse',
     dataAiHint: 'female fashion',
   },
   {
@@ -29,6 +31,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800'],
     sizes: ['M', 'L', 'XL'],
     category: 'New Arrivals',
+    subCategory: 'Jacket',
     dataAiHint: 'urban fashion',
   },
   {
@@ -39,6 +42,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800', 'https://placehold.co/600x800'],
     sizes: ['S', 'M', 'L', 'XL'],
     category: 'Best Sellers',
+    subCategory: 'Trousers',
     dataAiHint: 'mens trousers',
   },
   {
@@ -49,6 +53,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800', 'https://placehold.co/600x800'],
     sizes: ['S', 'M', 'L'],
     category: 'Women',
+    subCategory: 'Dress',
     dataAiHint: 'summer dress',
   },
   {
@@ -59,6 +64,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800'],
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
     category: 'Best Sellers',
+    subCategory: 'T-Shirt',
     dataAiHint: 'basic tshirt',
   },
   {
@@ -69,6 +75,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800', 'https://placehold.co/600x800'],
     sizes: ['S', 'M', 'L'],
     category: 'Men',
+    subCategory: 'Sweater',
     dataAiHint: 'mens sweater',
   },
   {
@@ -79,6 +86,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800', 'https://placehold.co/600x800'],
     sizes: ['XS', 'S', 'M'],
     category: 'Women',
+    subCategory: 'Jeans',
     dataAiHint: 'womens jeans',
   },
   {
@@ -89,6 +97,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800'],
     sizes: ['M', 'L'],
     category: 'New Arrivals',
+    subCategory: 'Coat',
     dataAiHint: 'fashion coat',
   },
   {
@@ -99,6 +108,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800', 'https://placehold.co/600x800'],
     sizes: ['S', 'M', 'L', 'XL'],
     category: 'Men',
+    subCategory: 'Polo Shirt',
     dataAiHint: 'polo shirt',
   },
   {
@@ -109,6 +119,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800'],
     sizes: ['L'],
     category: 'Best Sellers',
+    subCategory: 'Scarf',
     dataAiHint: 'cashmere scarf',
   },
   {
@@ -119,6 +130,7 @@ export const products: Product[] = [
     images: ['https://placehold.co/600x800', 'https://placehold.co/600x800'],
     sizes: ['XS', 'S', 'M'],
     category: 'Women',
+    subCategory: 'Skirt',
     dataAiHint: 'fashion skirt',
   },
 ];

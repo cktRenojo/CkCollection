@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { products as initialProducts } from '@/lib/data';
-import type { Product } from '@/lib/types';
+import type { Product, ProductCategory, ProductSubCategory } from '@/lib/types';
 import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2 } from 'lucide-react';
+import { Trash2, UploadCloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -20,29 +20,75 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ADMIN_PASSWORD = 'password123';
 
+const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Best Sellers'];
+const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
+
 function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [subCategoryFilter, setSubCategoryFilter] = useState('All');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newProductImage, setNewProductImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleFileChange = (file: File | null) => {
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({ title: 'File too large', description: 'Please upload an image smaller than 10MB.', variant: 'destructive' });
+        return;
+      }
+      setNewProductImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setNewProductImage(null);
+      setImagePreview(null);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileChange(e.dataTransfer.files[0]);
+    }
+  };
 
   const handleAddProduct = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    
+    if (!newProductImage || !imagePreview) {
+        toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
+        return;
+    }
+    
     const newProduct: Product = {
-      id: (products.length + 2).toString(),
+      id: (products.length + 1 + Math.random()).toString(),
       name: formData.get('name') as string,
       price: parseFloat(formData.get('price') as string),
-      category: formData.get('category') as Product['category'],
+      category: formData.get('category') as ProductCategory,
+      subCategory: formData.get('subCategory') as ProductSubCategory,
       description: 'A newly added product.',
-      images: ['https://placehold.co/600x800'],
+      images: [imagePreview],
       sizes: ['S', 'M', 'L'],
       dataAiHint: 'fashion apparel',
     };
     setProducts((prev) => [newProduct, ...prev]);
     toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-    // In a real app, you would close the dialog here.
+
+    // Reset form and close dialog
+    setIsAddDialogOpen(false);
+    handleFileChange(null);
   };
 
   const handleRemoveProduct = (id: string) => {
@@ -50,32 +96,92 @@ function AdminDashboard() {
     toast({ title: 'Product Removed', description: 'The product has been removed.', variant: 'destructive' });
   };
 
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const categoryMatch = categoryFilter === 'All' || product.category === categoryFilter;
+      const subCategoryMatch = subCategoryFilter === 'All' || product.subCategory === subCategoryFilter;
+      return categoryMatch && subCategoryMatch;
+    });
+  }, [products, categoryFilter, subCategoryFilter]);
+
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold font-headline">Manage Products</h2>
-        <Dialog>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>Add Product</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[480px]">
             <DialogHeader>
               <DialogTitle>Add New Product</DialogTitle>
               <DialogDescription>Fill in the details for the new product.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddProduct} className="space-y-4">
+               <div className="space-y-2">
+                <Label>Product Image</Label>
+                <div 
+                  className="mt-2 flex justify-center rounded-lg border border-dashed border-input px-6 py-10"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  <div className="text-center">
+                    {imagePreview ? (
+                      <Image src={imagePreview} alt="Product preview" width={100} height={100} className="mx-auto h-24 w-24 object-contain rounded-md" />
+                    ) : (
+                      <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
+                    )}
+                    <div className="mt-4 flex text-sm leading-6 text-muted-foreground">
+                      <Label
+                        htmlFor="file-upload"
+                        className="relative cursor-pointer rounded-md bg-background font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:text-primary/80"
+                      >
+                        <span>Upload a file</span>
+                        <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)} />
+                      </Label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs leading-5 text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name</Label>
                 <Input id="name" name="name" required />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="price">Price</Label>
-                <Input id="price" name="price" type="number" step="0.01" required />
+
+              <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input id="price" name="price" type="number" step="0.01" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select name="category" required>
+                      <SelectTrigger id="category">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Input id="category" name="category" required />
+                <Label htmlFor="subCategory">Sub-Category</Label>
+                <Select name="subCategory" required>
+                  <SelectTrigger id="subCategory">
+                    <SelectValue placeholder="Select sub-category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
+              
               <DialogFooter>
                 <Button type="submit">Add Product</Button>
               </DialogFooter>
@@ -83,8 +189,36 @@ function AdminDashboard() {
           </DialogContent>
         </Dialog>
       </div>
-
+      
       <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="category-filter">Category</Label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger id="category-filter" className="w-[180px]">
+                      <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="All">All Categories</SelectItem>
+                      {allCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="subcategory-filter">Sub-Category</Label>
+              <Select value={subCategoryFilter} onValueChange={setSubCategoryFilter}>
+                  <SelectTrigger id="subcategory-filter" className="w-[180px]">
+                      <SelectValue placeholder="Filter by sub-category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="All">All Sub-Categories</SelectItem>
+                      {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
+                  </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -92,18 +226,20 @@ function AdminDashboard() {
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Sub-Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell>
                     <Image src={product.images[0]} alt={product.name} width={40} height={53} className="rounded-md object-cover" data-ai-hint={product.dataAiHint} />
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.category}</TableCell>
+                  <TableCell>{product.subCategory}</TableCell>
                   <TableCell>₱{product.price.toFixed(2)}</TableCell>
                   <TableCell>
                     <Button variant="ghost" size="icon" onClick={() => handleRemoveProduct(product.id)}>
