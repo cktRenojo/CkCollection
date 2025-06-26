@@ -26,6 +26,7 @@ import { useProducts } from '@/hooks/use-products';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Best Sellers'];
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
@@ -59,6 +60,7 @@ export default function AdminPage() {
   const [newProductSizes, setNewProductSizes] = useState<ProductSize[]>([]);
   const [newProductCategory, setNewProductCategory] = useState<ProductCategory | ''>('');
   const [newProductSubCategory, setNewProductSubCategory] = useState<ProductSubCategory | ''>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { toast } = useToast();
   
@@ -76,6 +78,7 @@ export default function AdminPage() {
     setNewProductSizes([]);
     setNewProductCategory('');
     setNewProductSubCategory('');
+    setIsSubmitting(false);
   }
 
   const handleFileChange = (file: File | null) => {
@@ -105,7 +108,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!newProductImage || !imagePreview) {
         toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
         return;
@@ -136,26 +139,28 @@ export default function AdminPage() {
       return;
     }
     
-    const newProduct: Omit<Product, 'id'> = {
-      name: newProductName,
-      price: priceValue,
-      description: newProductDescription,
-      category: newProductCategory as ProductCategory,
-      subCategory: newProductSubCategory as ProductSubCategory,
-      images: ['https://placehold.co/600x800'],
-      sizes: newProductSizes,
-      dataAiHint: 'fashion apparel',
-    };
-    
-    addProduct(newProduct)
-      .then(() => {
-        toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-        setIsAddDialogOpen(false);
-      })
-      .catch((error) => {
-        console.error("Failed to add product:", error);
-        toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
-      });
+    setIsSubmitting(true);
+    try {
+      const newProduct: Omit<Product, 'id'> = {
+        name: newProductName,
+        price: priceValue,
+        description: newProductDescription,
+        category: newProductCategory as ProductCategory,
+        subCategory: newProductSubCategory as ProductSubCategory,
+        images: ['https://placehold.co/600x800'],
+        sizes: newProductSizes,
+        dataAiHint: 'fashion apparel',
+      };
+      
+      await addProduct(newProduct);
+      toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to add product:", error);
+      toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRemoveProduct = async (id: string) => {
@@ -204,104 +209,108 @@ export default function AdminPage() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
-                <DialogTitle>Add New Product</DialogTitle>
-                <DialogDescription>Fill in the details for the new product.</DialogDescription>
+                  <DialogTitle>Add New Product</DialogTitle>
+                  <DialogDescription>Fill in the details for the new product.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                    <Label>Product Image</Label>
-                    <div 
-                    className="mt-2 flex justify-center rounded-lg border border-dashed border-input px-6 py-10"
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                    >
-                    <div className="text-center">
-                        {imagePreview ? (
-                        <Image src={imagePreview} alt="Product preview" width={100} height={100} className="mx-auto h-24 w-24 object-contain rounded-md" />
-                        ) : (
-                        <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
-                        )}
-                        <div className="mt-4 flex text-sm leading-6 text-muted-foreground">
-                        <Label
-                            htmlFor="file-upload"
-                            className="relative cursor-pointer rounded-md bg-background font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:text-primary/80"
+                <ScrollArea className="max-h-[65vh] -mx-6">
+                  <div className="space-y-4 py-4 px-6">
+                    <div className="space-y-2">
+                        <Label>Product Image</Label>
+                        <div 
+                        className="mt-2 flex justify-center rounded-lg border border-dashed border-input px-6 py-10"
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
                         >
-                            <span>Upload a file</span>
-                            <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)} />
-                        </Label>
-                        <p className="pl-1">or drag and drop</p>
+                        <div className="text-center">
+                            {imagePreview ? (
+                            <Image src={imagePreview} alt="Product preview" width={100} height={100} className="mx-auto h-24 w-24 object-contain rounded-md" />
+                            ) : (
+                            <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
+                            )}
+                            <div className="mt-4 flex text-sm leading-6 text-muted-foreground">
+                            <Label
+                                htmlFor="file-upload"
+                                className="relative cursor-pointer rounded-md bg-background font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:text-primary/80"
+                            >
+                                <span>Upload a file</span>
+                                <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)} />
+                            </Label>
+                            <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-xs leading-5 text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
                         </div>
-                        <p className="text-xs leading-5 text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                        </div>
                     </div>
-                    </div>
-                </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="name">Product Name</Label>
-                    <Input id="name" name="name" value={newProductName} onChange={(e) => setNewProductName(e.target.value)} />
-                </div>
-                
-                <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" name="description" placeholder="Describe the product" value={newProductDescription} onChange={(e) => setNewProductDescription(e.target.value)} />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="price">Price</Label>
-                        <Input id="price" name="price" type="number" step="0.01" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} />
+                        <Label htmlFor="name">Product Name</Label>
+                        <Input id="name" name="name" value={newProductName} onChange={(e) => setNewProductName(e.target.value)} />
                     </div>
+                    
                     <div className="space-y-2">
-                        <Label htmlFor="category">Category</Label>
-                        <Select name="category" value={newProductCategory} onValueChange={(value) => setNewProductCategory(value as ProductCategory)}>
-                        <SelectTrigger id="category">
-                            <SelectValue placeholder="Select category" />
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" name="description" placeholder="Describe the product" value={newProductDescription} onChange={(e) => setNewProductDescription(e.target.value)} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="price">Price</Label>
+                            <Input id="price" name="price" type="number" step="0.01" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="category">Category</Label>
+                            <Select name="category" value={newProductCategory} onValueChange={(value) => setNewProductCategory(value as ProductCategory)}>
+                            <SelectTrigger id="category">
+                                <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {allCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                            </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <Label htmlFor="subCategory">Sub-Category</Label>
+                        <Select name="subCategory" value={newProductSubCategory} onValueChange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
+                        <SelectTrigger id="subCategory">
+                            <SelectValue placeholder="Select sub-category" />
                         </SelectTrigger>
                         <SelectContent>
-                            {allCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                            {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
                         </SelectContent>
                         </Select>
                     </div>
-                </div>
-                
-                <div className="space-y-2">
-                    <Label htmlFor="subCategory">Sub-Category</Label>
-                    <Select name="subCategory" value={newProductSubCategory} onValueChange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
-                    <SelectTrigger id="subCategory">
-                        <SelectValue placeholder="Select sub-category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
-                    </SelectContent>
-                    </Select>
-                </div>
-                
-                <div className="space-y-2">
-                    <Label>Available Sizes</Label>
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
-                      {allSizes.map((size) => (
-                        <div key={size} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`size-add-${size}`}
-                            checked={newProductSizes.includes(size)}
-                            onCheckedChange={(checked) => {
-                              setNewProductSizes(prevSizes => 
-                                checked 
-                                  ? [...prevSizes, size]
-                                  : prevSizes.filter(s => s !== size)
-                              );
-                            }}
-                          />
-                          <Label htmlFor={`size-add-${size}`} className="font-normal cursor-pointer">
-                            {size}
-                          </Label>
+                    
+                    <div className="space-y-2">
+                        <Label>Available Sizes</Label>
+                        <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
+                          {allSizes.map((size) => (
+                            <div key={size} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`size-add-${size}`}
+                                checked={newProductSizes.includes(size)}
+                                onCheckedChange={(checked) => {
+                                  setNewProductSizes(prevSizes => 
+                                    checked 
+                                      ? [...prevSizes, size]
+                                      : prevSizes.filter(s => s !== size)
+                                  );
+                                }}
+                              />
+                              <Label htmlFor={`size-add-${size}`} className="font-normal cursor-pointer">
+                                {size}
+                              </Label>
+                            </div>
+                          ))}
                         </div>
-                      ))}
                     </div>
-                </div>
-                </div>
+                  </div>
+                </ScrollArea>
                 <DialogFooter>
-                    <Button type="button" onClick={handleAddProduct}>Add Product</Button>
+                    <Button type="button" onClick={handleAddProduct} disabled={isSubmitting}>
+                      {isSubmitting ? 'Adding...' : 'Add Product'}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
             </Dialog>
