@@ -66,7 +66,7 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
           <div className="flex justify-between">
             <Label>Price Range</Label>
             <span className="text-sm font-medium">
-              ${filters.price[0]} - ${filters.price[1]}
+              ₱{filters.price[0]} - ₱{filters.price[1]}
             </span>
           </div>
           <Slider

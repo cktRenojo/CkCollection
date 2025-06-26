@@ -50,7 +50,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <div className="flex flex-col justify-center">
           <span className="text-sm font-semibold text-primary">{product.category}</span>
           <h1 className="text-4xl lg:text-5xl font-bold font-headline mt-2">{product.name}</h1>
-          <p className="text-2xl mt-4 font-medium">${product.price.toFixed(2)}</p>
+          <p className="text-2xl mt-4 font-medium">₱{product.price.toFixed(2)}</p>
           <p className="mt-6 text-muted-foreground leading-relaxed">{product.description}</p>
           <div className="mt-8">
             <AddToCartForm product={product} />

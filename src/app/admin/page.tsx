@@ -103,7 +103,7 @@ function AdminDashboard() {
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.category}</TableCell>
-                  <TableCell>${product.price.toFixed(2)}</TableCell>
+                  <TableCell>₱{product.price.toFixed(2)}</TableCell>
                   <TableCell>
                     <Button variant="ghost" size="icon" onClick={() => handleRemoveProduct(product.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />

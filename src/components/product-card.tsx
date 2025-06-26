@@ -25,7 +25,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <CardFooter className="flex-col items-start p-4">
           <h3 className="font-semibold text-lg">{product.name}</h3>
           <p className="text-muted-foreground text-sm">{product.category}</p>
-          <p className="mt-2 font-medium text-lg">${product.price.toFixed(2)}</p>
+          <p className="mt-2 font-medium text-lg">₱{product.price.toFixed(2)}</p>
         </CardFooter>
       </Card>
     </Link>

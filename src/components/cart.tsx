@@ -41,7 +41,7 @@ export function Cart() {
                       <h3 className="font-medium">{item.product.name}</h3>
                       <p className="text-muted-foreground">Size: {item.size}</p>
                       <p className="text-muted-foreground">
-                        Price: ${item.product.price.toFixed(2)}
+                        Price: ₱{item.product.price.toFixed(2)}
                       </p>
                       <div className="mt-2 flex items-center">
                         <Input
@@ -63,7 +63,7 @@ export function Cart() {
                         </Button>
                       </div>
                     </div>
-                    <p className="font-medium">${(item.product.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-medium">₱{(item.product.price * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
@@ -76,7 +76,7 @@ export function Cart() {
           <div className="w-full space-y-4">
             <div className="flex justify-between text-base font-medium">
               <p>Subtotal</p>
-              <p>${cartTotal.toFixed(2)}</p>
+              <p>₱{cartTotal.toFixed(2)}</p>
             </div>
             <p className="text-sm text-muted-foreground">
               Shipping and taxes calculated at checkout.
