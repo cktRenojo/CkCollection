@@ -284,7 +284,7 @@ export default function AdminPage() {
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">Admin Access</CardTitle>
+          <CardTitle className="text-2xl font-headline">Bakal Ako</CardTitle>
           <CardDescription>Enter the password to manage the store.</CardDescription>
         </CardHeader>
         <CardContent>
