@@ -14,11 +14,39 @@ import {
 import { AddToCartForm } from './_components/add-to-cart-form';
 import { AiRecommendations } from '@/components/ai-recommendations';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const { products } = useProducts();
+  const { products, loading } = useProducts();
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
+            <div>
+                <Skeleton className="aspect-[3/4] w-full rounded-xl" />
+            </div>
+            <div className="flex flex-col justify-center py-4 space-y-6">
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-12 w-3/4" />
+                <Skeleton className="h-8 w-1/3" />
+                <Separator />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+                <div className="pt-4">
+                  <Skeleton className="h-12 w-40" />
+                </div>
+            </div>
+        </div>
+      </div>
+    );
+  }
+
   const product = products.find((p) => p.id === id);
 
   if (!product) {

@@ -1,59 +1,83 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { collection, onSnapshot, addDoc, deleteDoc, doc, getDocs, writeBatch } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
+import { db } from '@/lib/firebase';
 import { products as initialProducts } from '@/lib/data';
 
 interface ProductsContextType {
   products: Product[];
-  addProduct: (product: Product) => void;
-  removeProduct: (productId: string) => void;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+  removeProduct: (productId: string) => Promise<void>;
+  loading: boolean;
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
 export const ProductsProvider = ({ children }: { children: ReactNode }) => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load from localStorage on initial client-side render
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedProducts = localStorage.getItem('products');
-      if (storedProducts) {
+    // This check ensures Firebase is initialized on the client.
+    if (typeof window === 'undefined') return;
+
+    const productsCollectionRef = collection(db, 'products');
+
+    // --- Seed database with initial data if it's empty ---
+    const seedDatabase = async () => {
         try {
-          const parsedProducts = JSON.parse(storedProducts);
-          if (Array.isArray(parsedProducts)) {
-            setProducts(parsedProducts);
-          }
+            const snapshot = await getDocs(productsCollectionRef);
+            if (snapshot.empty) {
+                console.log("Database is empty. Seeding initial products...");
+                const batch = writeBatch(db);
+                initialProducts.forEach((product) => {
+                    // Use the ID from our static data file for consistency
+                    const docRef = doc(db, 'products', product.id);
+                    batch.set(docRef, product);
+                });
+                await batch.commit();
+                console.log("Database seeded successfully.");
+            }
         } catch (error) {
-          console.error("Failed to parse products from localStorage", error);
+            console.error("Error seeding database: ", error);
         }
-      }
-      setIsLoaded(true);
-    }
+    };
+    
+    seedDatabase();
+
+    // --- Listen for real-time updates ---
+    const unsubscribe = onSnapshot(productsCollectionRef, (snapshot) => {
+      const productsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Product[];
+      setProducts(productsData);
+      setLoading(false);
+    }, (error) => {
+        console.error("Error fetching products from Firestore:", error);
+        // In a real app, you'd want to handle this error more gracefully
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  // Persist to localStorage whenever products change, but only after initial load
-  useEffect(() => {
-    if (isLoaded && typeof window !== 'undefined') {
-      localStorage.setItem('products', JSON.stringify(products));
-    }
-  }, [products, isLoaded]);
-
-
-  const addProduct = (product: Product) => {
-    setProducts((prev) => [product, ...prev]);
+  const addProduct = async (productData: Omit<Product, 'id'>) => {
+    // Firestore will auto-generate an ID
+    await addDoc(collection(db, 'products'), productData);
   };
 
-  const removeProduct = (productId: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== productId));
+  const removeProduct = async (productId: string) => {
+    await deleteDoc(doc(db, 'products', productId));
   };
 
   const value = {
     products,
     addProduct,
     removeProduct,
+    loading,
   };
 
   return React.createElement(ProductsContext.Provider, { value }, children);

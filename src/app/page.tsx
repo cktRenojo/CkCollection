@@ -5,9 +5,10 @@ import type { Product } from '@/lib/types';
 import ProductCard from '@/components/product-card';
 import { ProductFilters } from '@/components/product-filters';
 import { useProducts } from '@/hooks/use-products';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
-  const { products: allProducts } = useProducts();
+  const { products: allProducts, loading } = useProducts();
   const [filters, setFilters] = useState({
     category: 'All',
     subCategory: 'All',
@@ -38,7 +39,20 @@ export default function Home() {
           <ProductFilters filters={filters} setFilters={setFilters} />
         </aside>
         <main className="lg:col-span-3">
-          {filteredProducts.length > 0 ? (
+          {loading ? (
+             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
+              {Array.from({ length: 9 }).map((_, index) => (
+                <div key={index} className="space-y-4">
+                    <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-6 w-4/5" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-6 w-1/4" />
+                    </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />

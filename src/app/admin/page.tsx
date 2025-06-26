@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProducts } from '@/hooks/use-products';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 
 const ADMIN_PASSWORD = 'password123';
 
@@ -28,7 +30,7 @@ const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Best 
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
 
 function AdminDashboard() {
-  const { products, addProduct, removeProduct } = useProducts();
+  const { products, addProduct, removeProduct, loading } = useProducts();
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subCategoryFilter, setSubCategoryFilter] = useState('All');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -63,7 +65,7 @@ function AdminDashboard() {
     }
   };
 
-  const handleAddProduct = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddProduct = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     
@@ -72,29 +74,38 @@ function AdminDashboard() {
         return;
     }
     
-    const newProduct: Product = {
-      id: (products.length + 1 + Math.random()).toString(),
+    const newProduct: Omit<Product, 'id'> = {
       name: formData.get('name') as string,
       price: parseFloat(formData.get('price') as string),
       category: formData.get('category') as ProductCategory,
       subCategory: formData.get('subCategory') as ProductSubCategory,
-      description: 'A newly added product.',
+      description: formData.get('description') as string,
       images: [imagePreview],
       sizes: ['S', 'M', 'L'],
       dataAiHint: 'fashion apparel',
     };
-    addProduct(newProduct);
-    toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-
-    // Reset form and close dialog
-    setIsAddDialogOpen(false);
-    setNewProductImage(null);
-    setImagePreview(null);
+    
+    try {
+      await addProduct(newProduct);
+      toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
+      setIsAddDialogOpen(false);
+      setNewProductImage(null);
+      setImagePreview(null);
+      event.currentTarget.reset();
+    } catch (error) {
+      console.error("Failed to add product:", error);
+      toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
+    }
   };
 
-  const handleRemoveProduct = (id: string) => {
-    removeProduct(id);
-    toast({ title: 'Product Removed', description: 'The product has been removed.', variant: 'destructive' });
+  const handleRemoveProduct = async (id: string) => {
+    try {
+      await removeProduct(id);
+      toast({ title: 'Product Removed', description: 'The product has been removed.', variant: 'destructive' });
+    } catch (error) {
+       console.error("Failed to remove product:", error);
+       toast({ title: 'Error', description: 'Could not remove product. Please try again.', variant: 'destructive' });
+    }
   };
 
   const filteredProducts = useMemo(() => {
@@ -151,6 +162,11 @@ function AdminDashboard() {
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name</Label>
                 <Input id="name" name="name" required />
+              </div>
+              
+               <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea id="description" name="description" required placeholder="Describe the product" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -233,22 +249,41 @@ function AdminDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="hidden sm:table-cell">
-                    <Image src={product.images[0]} alt={product.name} width={40} height={53} className="rounded-md object-cover" data-ai-hint={product.dataAiHint} />
-                  </TableCell>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>{product.subCategory}</TableCell>
-                  <TableCell>₱{product.price.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleRemoveProduct(product.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={`skeleton-${i}`}>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-12 w-12 rounded-md" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-1/4" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="hidden sm:table-cell">
+                      <Image src={product.images[0]} alt={product.name} width={40} height={53} className="rounded-md object-cover" data-ai-hint={product.dataAiHint} />
+                    </TableCell>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.subCategory}</TableCell>
+                    <TableCell>₱{product.price.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveProduct(product.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    No products found.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>
