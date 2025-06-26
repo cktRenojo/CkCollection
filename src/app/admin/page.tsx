@@ -120,11 +120,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddProduct = () => {
-    if (!newProductImage || !imagePreview) {
-        toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
-        return;
-    }
+  const handleAddProduct = async () => {
     if (!newProductName.trim()) {
         toast({ title: 'Name Required', description: 'Please enter a product name.', variant: 'destructive' });
         return;
@@ -152,26 +148,27 @@ export default function AdminPage() {
     }
     
     setIsSubmitting(true);
-    const newProduct: Omit<Product, 'id'> = {
-      name: newProductName,
-      price: priceValue,
-      description: newProductDescription,
-      category: newProductCategory as ProductCategory,
-      subCategory: newProductSubCategory as ProductSubCategory,
-      images: ['https://placehold.co/600x800'],
-      sizes: newProductSizes,
-      dataAiHint: 'fashion apparel',
-    };
-    
-    addProduct(newProduct).then(() => {
+    try {
+      const newProduct: Omit<Product, 'id'> = {
+        name: newProductName,
+        price: priceValue,
+        description: newProductDescription,
+        category: newProductCategory as ProductCategory,
+        subCategory: newProductSubCategory as ProductSubCategory,
+        images: ['https://placehold.co/600x800'],
+        sizes: newProductSizes,
+        dataAiHint: 'fashion apparel',
+      };
+      
+      await addProduct(newProduct);
       toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
       setIsAddDialogOpen(false);
-    }).catch((error) => {
+    } catch (error) {
       console.error("Failed to add product:", error);
       toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
-    }).finally(() => {
+    } finally {
       setIsSubmitting(false);
-    });
+    }
   };
 
   const handleRemoveProduct = async (id: string) => {
@@ -420,3 +417,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+    
