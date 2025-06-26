@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -30,14 +31,16 @@ export default function UserLoginPage() {
       return;
     }
 
+    setIsLoading(true);
+
     // Check for admin credentials first to prevent incorrect redirects.
     if (email === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       localStorage.setItem('isAdminAuthenticated', 'true');
-      router.replace('/admin');
+      // Use window.location.replace for a full page reload to avoid router state conflicts
+      window.location.replace('/admin');
       return;
     }
 
-    setIsLoading(true);
     try {
       await login(email, password);
       toast({ title: 'Success', description: 'You have been logged in.' });
@@ -72,13 +75,13 @@ export default function UserLoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email or Username</Label>
               <Input
                 id="email"
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="you@example.com or admin"
                 required
                 disabled={isLoading}
               />

@@ -40,7 +40,7 @@ export default function AdminPage() {
   useEffect(() => {
     const authStatus = typeof window !== 'undefined' ? localStorage.getItem('isAdminAuthenticated') : null;
     if (authStatus !== 'true') {
-      router.push('/login');
+      router.push('/auth/login');
     } else {
       setIsAuthenticated(true);
     }
@@ -78,7 +78,7 @@ export default function AdminPage() {
   
   const handleLogout = () => {
     localStorage.removeItem('isAdminAuthenticated');
-    router.push('/login');
+    router.push('/auth/login');
   };
 
   const resetFormState = () => {
@@ -155,7 +155,7 @@ export default function AdminPage() {
         description: newProductDescription,
         category: newProductCategory as ProductCategory,
         subCategory: newProductSubCategory as ProductSubCategory,
-        images: ['https://placehold.co/600x800'],
+        images: [imagePreview || 'https://placehold.co/600x800'],
         sizes: newProductSizes,
         dataAiHint: 'fashion apparel',
       };
@@ -417,5 +417,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    
