@@ -51,6 +51,9 @@ export default function AdminPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   // State for new product form
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductDescription, setNewProductDescription] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState('');
   const [newProductImage, setNewProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [newProductSizes, setNewProductSizes] = useState<ProductSize[]>([]);
@@ -63,6 +66,17 @@ export default function AdminPage() {
     localStorage.removeItem('isAdminAuthenticated');
     router.push('/login');
   };
+
+  const resetFormState = () => {
+    setNewProductName('');
+    setNewProductDescription('');
+    setNewProductPrice('');
+    setNewProductImage(null);
+    setImagePreview(null);
+    setNewProductSizes([]);
+    setNewProductCategory('');
+    setNewProductSubCategory('');
+  }
 
   const handleFileChange = (file: File | null) => {
     if (file) {
@@ -93,10 +107,22 @@ export default function AdminPage() {
 
   const handleAddProduct = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    
+
     if (!newProductImage || !imagePreview) {
         toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
+        return;
+    }
+    if (!newProductName.trim()) {
+        toast({ title: 'Name Required', description: 'Please enter a product name.', variant: 'destructive' });
+        return;
+    }
+     if (!newProductDescription.trim()) {
+        toast({ title: 'Description Required', description: 'Please enter a product description.', variant: 'destructive' });
+        return;
+    }
+    const priceValue = parseFloat(newProductPrice);
+    if (isNaN(priceValue) || priceValue <= 0) {
+        toast({ title: 'Invalid Price', description: 'Please enter a valid positive number for the price.', variant: 'destructive' });
         return;
     }
     if (!newProductCategory) {
@@ -113,9 +139,9 @@ export default function AdminPage() {
     }
     
     const newProduct: Omit<Product, 'id'> = {
-      name: formData.get('name') as string,
-      price: parseFloat(formData.get('price') as string),
-      description: formData.get('description') as string,
+      name: newProductName,
+      price: priceValue,
+      description: newProductDescription,
       category: newProductCategory as ProductCategory,
       subCategory: newProductSubCategory as ProductSubCategory,
       images: [imagePreview],
@@ -127,6 +153,7 @@ export default function AdminPage() {
       await addProduct(newProduct);
       toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
       setIsAddDialogOpen(false);
+      resetFormState();
     } catch (error) {
       console.error("Failed to add product:", error);
       toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
@@ -170,12 +197,7 @@ export default function AdminPage() {
               onOpenChange={(open) => {
                 setIsAddDialogOpen(open);
                 if (!open) {
-                  // Reset form state when dialog is closed
-                  setNewProductImage(null);
-                  setImagePreview(null);
-                  setNewProductSizes([]);
-                  setNewProductCategory('');
-                  setNewProductSubCategory('');
+                  resetFormState();
                 }
               }}
             >
@@ -218,18 +240,18 @@ export default function AdminPage() {
 
                 <div className="space-y-2">
                     <Label htmlFor="name">Product Name</Label>
-                    <Input id="name" name="name" required />
+                    <Input id="name" name="name" required value={newProductName} onChange={(e) => setNewProductName(e.target.value)} />
                 </div>
                 
                 <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" name="description" required placeholder="Describe the product" />
+                    <Textarea id="description" name="description" required placeholder="Describe the product" value={newProductDescription} onChange={(e) => setNewProductDescription(e.target.value)} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="price">Price</Label>
-                        <Input id="price" name="price" type="number" step="0.01" required />
+                        <Input id="price" name="price" type="number" step="0.01" required value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="category">Category</Label>
