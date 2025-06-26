@@ -1,7 +1,7 @@
 'use client';
 
 import { useProducts } from '@/hooks/use-products';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -15,9 +15,11 @@ import { AddToCartForm } from './_components/add-to-cart-form';
 import { AiRecommendations } from '@/components/ai-recommendations';
 import { Separator } from '@/components/ui/separator';
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { products } = useProducts();
-  const product = products.find((p) => p.id === params.id);
+  const product = products.find((p) => p.id === id);
 
   if (!product) {
     notFound();
@@ -25,13 +27,13 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
-      <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
+      <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
         <div>
           <Carousel className="w-full">
             <CarouselContent>
               {product.images.map((img, index) => (
                 <CarouselItem key={index}>
-                  <Card className="overflow-hidden rounded-xl">
+                  <Card className="overflow-hidden rounded-xl shadow-lg">
                     <CardContent className="p-0">
                       <div className="relative aspect-[3/4] w-full">
                         <Image
