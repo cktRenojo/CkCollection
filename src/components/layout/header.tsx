@@ -14,7 +14,6 @@ const navLinks = [
   { href: '/#', label: 'New Arrivals' },
   { href: '/#', label: 'Best Sellers' },
   { href: '/contact', label: 'Contact' },
-  { href: '/admin', label: 'Admin' },
 ];
 
 export default function Header() {
