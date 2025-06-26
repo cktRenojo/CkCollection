@@ -23,8 +23,8 @@ export default function ContactPage() {
             <p className="text-muted-foreground">
               Our support team will get back to you within 24 hours.
             </p>
-            <a href="mailto:support@ckapparel.com" className="font-semibold text-primary mt-2 inline-block hover:underline">
-              support@ckapparel.com
+            <a href="mailto:support@ckcollections.com" className="font-semibold text-primary mt-2 inline-block hover:underline">
+              support@ckcollections.com
             </a>
           </CardContent>
         </Card>

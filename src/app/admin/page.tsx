@@ -38,6 +38,7 @@ function AdminDashboard() {
       description: 'A newly added product.',
       images: ['https://placehold.co/600x800'],
       sizes: ['S', 'M', 'L'],
+      dataAiHint: 'fashion apparel',
     };
     setProducts((prev) => [newProduct, ...prev]);
     toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
@@ -99,7 +100,7 @@ function AdminDashboard() {
               {products.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell>
-                    <Image src={product.images[0]} alt={product.name} width={40} height={53} className="rounded-md object-cover" />
+                    <Image src={product.images[0]} alt={product.name} width={40} height={53} className="rounded-md object-cover" data-ai-hint={product.dataAiHint} />
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.category}</TableCell>

@@ -7,8 +7,8 @@ import Footer from '@/components/layout/footer';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'C&K Apparel - Modern Fashion',
-  description: 'Discover the latest trends in fashion with C&K Apparel. Shop our collection of clothing for men and women.',
+  title: 'C&K Collections - Modern Fashion',
+  description: 'Discover the latest trends in fashion with C&K Collections. Shop our collection of clothing for men and women.',
 };
 
 export default function RootLayout({
@@ -21,7 +21,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased h-full flex flex-col')} suppressHydrationWarning>
         <CartProvider>

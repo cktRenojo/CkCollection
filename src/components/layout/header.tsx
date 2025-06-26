@@ -25,7 +25,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="text-2xl font-bold font-headline">
-          C&K Apparel
+          C&K Collections
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           {navLinks.map((link) => (
@@ -65,7 +65,7 @@ export default function Header() {
                 <div className="flex flex-col h-full">
                     <div className="flex justify-between items-center border-b pb-4">
                         <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-bold font-headline">
-                        C&K Apparel
+                        C&K Collections
                         </Link>
                         <SheetClose asChild>
                              <Button variant="ghost" size="icon">
