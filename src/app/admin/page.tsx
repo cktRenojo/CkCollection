@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -48,9 +49,14 @@ export default function AdminPage() {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subCategoryFilter, setSubCategoryFilter] = useState('All');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  
+  // State for new product form
   const [newProductImage, setNewProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [newProductSizes, setNewProductSizes] = useState<ProductSize[]>([]);
+  const [newProductCategory, setNewProductCategory] = useState<ProductCategory | ''>('');
+  const [newProductSubCategory, setNewProductSubCategory] = useState<ProductSubCategory | ''>('');
+  
   const { toast } = useToast();
   
   const handleLogout = () => {
@@ -93,7 +99,14 @@ export default function AdminPage() {
         toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
         return;
     }
-
+    if (!newProductCategory) {
+        toast({ title: 'Category Required', description: 'Please select a product category.', variant: 'destructive' });
+        return;
+    }
+    if (!newProductSubCategory) {
+        toast({ title: 'Sub-Category Required', description: 'Please select a product sub-category.', variant: 'destructive' });
+        return;
+    }
     if (newProductSizes.length === 0) {
       toast({ title: 'Sizes Required', description: 'Please select at least one size for the product.', variant: 'destructive' });
       return;
@@ -102,9 +115,9 @@ export default function AdminPage() {
     const newProduct: Omit<Product, 'id'> = {
       name: formData.get('name') as string,
       price: parseFloat(formData.get('price') as string),
-      category: formData.get('category') as ProductCategory,
-      subCategory: formData.get('subCategory') as ProductSubCategory,
       description: formData.get('description') as string,
+      category: newProductCategory as ProductCategory,
+      subCategory: newProductSubCategory as ProductSubCategory,
       images: [imagePreview],
       sizes: newProductSizes,
       dataAiHint: 'fashion apparel',
@@ -114,7 +127,6 @@ export default function AdminPage() {
       await addProduct(newProduct);
       toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
       setIsAddDialogOpen(false);
-      event.currentTarget.reset();
     } catch (error) {
       console.error("Failed to add product:", error);
       toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
@@ -158,9 +170,12 @@ export default function AdminPage() {
               onOpenChange={(open) => {
                 setIsAddDialogOpen(open);
                 if (!open) {
+                  // Reset form state when dialog is closed
                   setNewProductImage(null);
                   setImagePreview(null);
                   setNewProductSizes([]);
+                  setNewProductCategory('');
+                  setNewProductSubCategory('');
                 }
               }}
             >
@@ -218,7 +233,7 @@ export default function AdminPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="category">Category</Label>
-                        <Select name="category" required>
+                        <Select name="category" required value={newProductCategory} onValueChange={(value) => setNewProductCategory(value as ProductCategory)}>
                         <SelectTrigger id="category">
                             <SelectValue placeholder="Select category" />
                         </SelectTrigger>
@@ -231,7 +246,7 @@ export default function AdminPage() {
                 
                 <div className="space-y-2">
                     <Label htmlFor="subCategory">Sub-Category</Label>
-                    <Select name="subCategory" required>
+                    <Select name="subCategory" required value={newProductSubCategory} onValueChange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
                     <SelectTrigger id="subCategory">
                         <SelectValue placeholder="Select sub-category" />
                     </SelectTrigger>
