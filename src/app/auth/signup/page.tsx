@@ -7,23 +7,49 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SignupPage() {
-  const { login } = useAuth();
+  const { signup } = useAuth();
+  const { toast } = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password) {
-      setError('Please fill in all fields.');
+      toast({ title: 'Error', description: 'Please fill in all fields.', variant: 'destructive' });
       return;
     }
-    // This is a mock signup. In a real app, you'd create a new user record.
-    setError('');
-    login(email, name);
+    setIsLoading(true);
+    try {
+      await signup(name, email, password);
+      toast({ title: 'Success', description: 'Your account has been created.' });
+    } catch (error: any) {
+      console.error(error);
+      let errorMessage = 'An unknown error occurred.';
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'This email address is already in use.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'The password is too weak. It must be at least 6 characters long.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Please enter a valid email address.';
+            break;
+          default:
+            errorMessage = 'Failed to create account. Please try again.';
+        }
+      }
+      toast({ title: 'Signup Failed', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -44,6 +70,7 @@ export default function SignupPage() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -55,6 +82,7 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -66,12 +94,12 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
+                disabled={isLoading}
               />
             </div>
-            
-            {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Account
             </Button>
             <div className="text-center text-sm text-muted-foreground">

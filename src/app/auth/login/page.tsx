@@ -8,23 +8,44 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function UserLoginPage() {
   const { login } = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please enter both email and password.');
+      toast({ title: 'Error', description: 'Please enter both email and password.', variant: 'destructive' });
       return;
     }
-    // This is a mock login. In a real app, you'd validate credentials.
-    // For this example, any non-empty password will work.
-    setError('');
-    login(email, email.split('@')[0]); // Use part of email as name
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      toast({ title: 'Success', description: 'You have been logged in.' });
+    } catch (error: any) {
+      console.error(error);
+      let errorMessage = 'An unknown error occurred.';
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            errorMessage = 'Invalid email or password.';
+            break;
+          default:
+            errorMessage = 'Failed to log in. Please try again.';
+        }
+      }
+      toast({ title: 'Login Failed', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,6 +66,7 @@ export default function UserLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -56,12 +78,13 @@ export default function UserLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
+                disabled={isLoading}
               />
             </div>
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Checkbox id="remember-me" />
+                <Checkbox id="remember-me" disabled={isLoading} />
                 <Label
                   htmlFor="remember-me"
                   className="text-sm font-normal cursor-pointer"
@@ -74,9 +97,8 @@ export default function UserLoginPage() {
               </Link>
             </div>
 
-            {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
-
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login
             </Button>
             <div className="text-center text-sm text-muted-foreground">

@@ -1,13 +1,26 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, User2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
+import { useAuth } from '@/hooks/use-auth';
 import { Cart } from '@/components/cart';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
-import { Separator } from '@/components/ui/separator';
 
 const navLinks = [
   { href: '/', label: 'Women' },
@@ -19,6 +32,7 @@ const navLinks = [
 
 export default function Header() {
   const { cartCount } = useCart();
+  const { user, logout, isAuthenticated, loading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -39,6 +53,33 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex items-center space-x-2">
+          {isAuthenticated ? (
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <User2 className="h-5 w-5" />
+                  <span className="sr-only">User menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  Hi, {user?.displayName || 'User'}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            !loading && (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/auth/login">Login</Link>
+              </Button>
+            )
+          )}
+
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -62,30 +103,53 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
-                <div className="flex flex-col h-full">
-                    <div className="flex justify-between items-center border-b pb-4">
-                        <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-bold font-headline">
-                        C&K Collections
-                        </Link>
-                        <SheetClose asChild>
-                             <Button variant="ghost" size="icon">
-                                <X className="h-6 w-6" />
-                             </Button>
-                        </SheetClose>
-                    </div>
-                    <nav className="flex flex-col space-y-4 mt-6">
-                      {navLinks.map((link) => (
-                          <Link
-                          key={link.label}
-                          href={link.href}
-                          className="text-lg transition-colors hover:text-primary"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          >
-                          {link.label}
-                          </Link>
-                      ))}
-                    </nav>
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-center border-b pb-4">
+                  <Link
+                    href="/"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-2xl font-bold font-headline"
+                  >
+                    C&K Collections
+                  </Link>
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon">
+                      <X className="h-6 w-6" />
+                    </Button>
+                  </SheetClose>
                 </div>
+                <nav className="flex flex-col space-y-4 mt-6">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      className="text-lg transition-colors hover:text-primary"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+                 <div className="mt-auto pt-6 border-t">
+                  {isAuthenticated ? (
+                     <Button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                      </Button>
+                  ) : (
+                    !loading && (
+                      <div className="space-y-2">
+                        <Button asChild className="w-full">
+                           <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>
+                        </Button>
+                         <Button asChild variant="outline" className="w-full">
+                           <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link>
+                        </Button>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
             </SheetContent>
           </Sheet>
         </div>

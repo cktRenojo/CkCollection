@@ -2,51 +2,64 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+import {
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  type User as FirebaseUser,
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
-  user: User | null;
-  login: (email: string, name: string) => void;
-  logout: () => void;
+  user: FirebaseUser | null;
+  loading: boolean;
+  signup: (name: string, email: string, pass: string) => Promise<FirebaseUser>;
+  login: (email: string, pass: string) => Promise<FirebaseUser>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const login = (email: string, name: string) => {
-    const newUser: User = { id: Date.now().toString(), email, name };
-    localStorage.setItem('user', JSON.stringify(newUser));
-    setUser(newUser);
+  const signup = async (name: string, email: string, pass: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(userCredential.user, { displayName: name });
+    setUser(userCredential.user);
     router.push('/');
+    return userCredential.user;
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
+  const login = async (email: string, pass: string) => {
+    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+    setUser(userCredential.user);
+    router.push('/');
+    return userCredential.user;
+  };
+
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
     router.push('/');
   };
-
+  
   const isAuthenticated = !!user;
 
-  const value = { user, login, logout, isAuthenticated };
+  const value = { user, loading, signup, login, logout, isAuthenticated };
 
   return React.createElement(AuthContext.Provider, { value }, children);
 };
