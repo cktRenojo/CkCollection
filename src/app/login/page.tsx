@@ -8,11 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'password123';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,7 +28,7 @@ export default function LoginPage() {
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       localStorage.setItem('isAdminAuthenticated', 'true');
-      window.location.assign('/admin');
+      router.replace('/admin');
     } else {
       setError('Invalid username or password.');
     }

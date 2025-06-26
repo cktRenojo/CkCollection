@@ -12,6 +12,9 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'password123';
+
 export default function UserLoginPage() {
   const { login } = useAuth();
   const router = useRouter();
@@ -26,6 +29,14 @@ export default function UserLoginPage() {
       toast({ title: 'Error', description: 'Please enter both email and password.', variant: 'destructive' });
       return;
     }
+
+    // Check for admin credentials first to prevent incorrect redirects.
+    if (email === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      localStorage.setItem('isAdminAuthenticated', 'true');
+      router.replace('/admin');
+      return;
+    }
+
     setIsLoading(true);
     try {
       await login(email, password);
