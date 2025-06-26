@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import type { Product, ProductCategory, ProductSubCategory, ProductSize } from '@/lib/types';
 import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, UploadCloud, LogOut } from 'lucide-react';
+import { Trash2, UploadCloud, LogOut, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -320,7 +320,12 @@ export default function AdminPage() {
                 </ScrollArea>
                 <DialogFooter>
                     <Button type="button" onClick={handleAddProduct} disabled={isSubmitting}>
-                      {isSubmitting ? 'Adding...' : 'Add Product'}
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Adding...
+                        </>
+                      ) : 'Add Product'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
