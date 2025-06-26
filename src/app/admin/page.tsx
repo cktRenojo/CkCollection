@@ -105,7 +105,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddProduct = async () => {
+  const handleAddProduct = () => {
     if (!newProductImage || !imagePreview) {
         toast({ title: 'Image Required', description: 'Please upload a product image.', variant: 'destructive' });
         return;
@@ -147,14 +147,15 @@ export default function AdminPage() {
       dataAiHint: 'fashion apparel',
     };
     
-    try {
-      await addProduct(newProduct);
-      toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-      setIsAddDialogOpen(false);
-    } catch (error) {
-      console.error("Failed to add product:", error);
-      toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
-    }
+    addProduct(newProduct)
+      .then(() => {
+        toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
+        setIsAddDialogOpen(false);
+      })
+      .catch((error) => {
+        console.error("Failed to add product:", error);
+        toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
+      });
   };
 
   const handleRemoveProduct = async (id: string) => {
@@ -206,7 +207,7 @@ export default function AdminPage() {
                 <DialogTitle>Add New Product</DialogTitle>
                 <DialogDescription>Fill in the details for the new product.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-4 py-4">
                 <div className="space-y-2">
                     <Label>Product Image</Label>
                     <div 
@@ -298,11 +299,10 @@ export default function AdminPage() {
                       ))}
                     </div>
                 </div>
-                
+                </div>
                 <DialogFooter>
                     <Button type="button" onClick={handleAddProduct}>Add Product</Button>
                 </DialogFooter>
-                </div>
             </DialogContent>
             </Dialog>
             <Button variant="outline" size="icon" onClick={handleLogout} aria-label="Log out">
