@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import type { Product, ProductCategory, ProductSubCategory, ProductSize } from '@/lib/types';
 import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, UploadCloud, Loader2 } from 'lucide-react';
+import { Trash2, UploadCloud, Loader2, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -26,6 +26,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
 const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Best Sellers'];
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
@@ -33,7 +35,10 @@ const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
 
 
 export default function AdminPage() {
-  const { products, addProduct, removeProduct, loading } = useProducts();
+  const { products, addProduct, removeProduct, loading: productsLoading } = useProducts();
+  const { user, loading: authLoading, logout } = useAuth();
+  const router = useRouter();
+
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subCategoryFilter, setSubCategoryFilter] = useState('All');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -50,6 +55,17 @@ export default function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/admin/login');
+    }
+  }, [user, authLoading, router]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/admin/login');
+  };
 
   const availableCategories = useMemo(() => {
     if (!products.length) return [];
@@ -102,7 +118,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!newProductName.trim()) {
         toast({ title: 'Name Required', description: 'Please enter a product name.', variant: 'destructive' });
         return;
@@ -142,18 +158,16 @@ export default function AdminPage() {
       dataAiHint: 'fashion apparel',
     };
 
-    addProduct(newProduct)
-      .then(() => {
-        toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-        setIsAddDialogOpen(false);
-      })
-      .catch((error) => {
-        console.error("Failed to add product:", error);
-        toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+    try {
+      await addProduct(newProduct);
+      toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to add product:", error);
+      toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRemoveProduct = async (id: string) => {
@@ -173,7 +187,14 @@ export default function AdminPage() {
       return categoryMatch && subCategoryMatch;
     });
   }, [products, categoryFilter, subCategoryFilter]);
-
+  
+  if (authLoading || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 space-y-8">
@@ -304,6 +325,10 @@ export default function AdminPage() {
                 </DialogFooter>
             </DialogContent>
             </Dialog>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
         </div>
       </div>
       
@@ -349,7 +374,7 @@ export default function AdminPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
+              {productsLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={`skeleton-${i}`}>
                     <TableCell className="hidden sm:table-cell"><Skeleton className="h-12 w-12 rounded-md" /></TableCell>

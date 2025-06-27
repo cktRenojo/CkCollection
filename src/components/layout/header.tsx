@@ -20,7 +20,6 @@ const navLinks = [
   { href: '/', label: 'New Arrivals' },
   { href: '/', label: 'Best Sellers' },
   { href: '/contact', label: 'Contact' },
-  { href: '/admin', label: 'Admin' },
 ];
 
 export default function Header() {
@@ -43,6 +42,12 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+           <Link
+              href={'/admin'}
+              className="transition-colors hover:text-primary"
+            >
+              Admin
+            </Link>
         </nav>
         <div className="flex items-center space-x-2">
           <Sheet>
@@ -94,6 +99,13 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
+                   <Link
+                      href={'/admin'}
+                      className="text-lg transition-colors hover:text-primary"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Admin
+                    </Link>
                 </nav>
               </div>
             </SheetContent>
