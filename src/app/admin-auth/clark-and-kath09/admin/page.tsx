@@ -223,6 +223,7 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Failed to add product:", error);
       toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -310,7 +311,7 @@ export default function AdminPage() {
               }}
             >
             <DialogTrigger asChild>
-                <Button>Add Product</Button>
+                <Button onClick={resetAddFormState}>Add Product</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
