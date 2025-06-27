@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
@@ -23,10 +23,16 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signupUser, signInWithGoogle } = useAuth();
+  const [emailPassLoading, setEmailPassLoading] = useState(false);
+  const { user, signupUser, signInWithGoogle, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+        router.push('/');
+    }
+  }, [user, authLoading, router]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,14 +44,14 @@ export default function SignupPage() {
       });
       return;
     }
-    setLoading(true);
+    setEmailPassLoading(true);
     try {
       await signupUser(fullName, email, password);
       toast({
         title: 'Signup Successful',
         description: 'Welcome to C&K Collections!',
       });
-      router.push('/');
+      // The useEffect will handle the redirect
     } catch (error: any) {
       toast({
         title: 'Signup Failed',
@@ -53,29 +59,21 @@ export default function SignupPage() {
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      setEmailPassLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      await signInWithGoogle();
-      toast({
-        title: 'Signup Successful',
-        description: 'Welcome to C&K Collections!',
-      });
-      router.push('/');
-    } catch (error: any) {
-      toast({
-        title: 'Signup Failed',
-        description: error.message || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleGoogleSignIn = () => {
+    signInWithGoogle();
   };
+  
+  if (authLoading || user) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-14rem)]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
 
   return (
@@ -96,6 +94,7 @@ export default function SignupPage() {
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                disabled={emailPassLoading}
               />
             </div>
             <div className="space-y-2">
@@ -107,6 +106,7 @@ export default function SignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={emailPassLoading}
               />
             </div>
             <div className="space-y-2">
@@ -117,6 +117,7 @@ export default function SignupPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={emailPassLoading}
               />
             </div>
             <div className="space-y-2">
@@ -127,12 +128,13 @@ export default function SignupPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={emailPassLoading}
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin" /> : 'Create Account'}
+            <Button type="submit" className="w-full" disabled={emailPassLoading}>
+              {emailPassLoading ? <Loader2 className="animate-spin" /> : 'Create Account'}
             </Button>
 
             <div className="relative w-full">
@@ -146,8 +148,8 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <Button variant="outline" type="button" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
-              {loading ? <Loader2 className="animate-spin" /> : <><GoogleIcon /> Google</>}
+            <Button variant="outline" type="button" className="w-full" onClick={handleGoogleSignIn} disabled={emailPassLoading}>
+               <GoogleIcon /> Google
             </Button>
             
             <p className="text-sm text-center text-muted-foreground">

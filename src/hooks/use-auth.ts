@@ -11,7 +11,8 @@ import {
   signOut,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithRedirect,
+  getRedirectResult
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -24,7 +25,7 @@ interface AuthContextType {
   signupUser: (fullName: string, email: string, password: string) => Promise<User>;
   signupAdmin: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
-  signInWithGoogle: () => Promise<{ user: User, isAdmin: boolean }>;
+  signInWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,8 +36,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // This effect handles the result of a Google sign-in redirect.
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result) {
+          // A user has successfully signed in via redirect.
+          const user = result.user;
+          // Check if it's a new user and create a document in Firestore if so.
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (!userDocSnap.exists()) {
+            await setDoc(doc(db, "users", user.uid), {
+              uid: user.uid,
+              displayName: user.displayName,
+              email: user.email,
+              role: 'user',
+              createdAt: new Date(),
+            });
+          }
+        }
+      })
+      .catch((error) => {
+        if (error.code !== 'auth/popup-closed-by-user') {
+          console.error("Google sign-in redirect error:", error);
+        }
+      });
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true);
       if (user) {
         setUser(user);
         const adminRef = doc(db, 'admins', user.uid);
@@ -60,9 +87,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const adminSnap = await getDoc(adminRef);
     const isAdmin = adminSnap.exists();
     
-    setUser(user);
-    setIsAdmin(isAdmin);
-
     return { user, isAdmin };
   };
   
@@ -80,8 +104,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       createdAt: new Date(),
     });
 
-    setUser(user);
-    setIsAdmin(false);
     return user;
   };
 
@@ -94,32 +116,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
+    setLoading(true); // Set loading state before redirect
     const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
-
-    // Check if user exists in our 'users' collection, if not, create them
-    const userDocRef = doc(db, 'users', user.uid);
-    const userDocSnap = await getDoc(userDocRef);
-
-    if (!userDocSnap.exists()) {
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        displayName: user.displayName,
-        email: user.email,
-        role: 'user',
-        createdAt: new Date(),
-      });
-    }
-    
-    const adminRef = doc(db, 'admins', user.uid);
-    const adminSnap = await getDoc(adminRef);
-    const isAdmin = adminSnap.exists();
-    
-    setUser(user);
-    setIsAdmin(isAdmin);
-
-    return { user, isAdmin };
+    await signInWithRedirect(auth, provider);
   };
 
   const logout = async () => {
