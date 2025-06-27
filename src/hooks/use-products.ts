@@ -1,13 +1,14 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { db } from '@/lib/firebase';
 
 interface ProductsContextType {
   products: Product[];
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+  updateProduct: (productId: string, productData: Partial<Omit<Product, 'id'>>) => Promise<void>;
   removeProduct: (productId: string) => Promise<void>;
   loading: boolean;
 }
@@ -45,6 +46,11 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     // Firestore will auto-generate an ID
     await addDoc(collection(db, 'products'), productData);
   };
+  
+  const updateProduct = async (productId: string, productData: Partial<Omit<Product, 'id'>>) => {
+    const productRef = doc(db, 'products', productId);
+    await updateDoc(productRef, productData);
+  };
 
   const removeProduct = async (productId: string) => {
     await deleteDoc(doc(db, 'products', productId));
@@ -53,6 +59,7 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     products,
     addProduct,
+    updateProduct,
     removeProduct,
     loading,
   };

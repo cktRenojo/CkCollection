@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import type { Product, ProductCategory, ProductSubCategory, ProductSize } from '@/lib/types';
 import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, UploadCloud, Loader2, LogOut } from 'lucide-react';
+import { Trash2, UploadCloud, Loader2, LogOut, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -35,13 +35,15 @@ const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
 
 
 export default function AdminPage() {
-  const { products, addProduct, removeProduct, loading: productsLoading } = useProducts();
+  const { products, addProduct, updateProduct, removeProduct, loading: productsLoading } = useProducts();
   const { user, isAdmin, loading: authLoading, logout } = useAuth();
   const router = useRouter();
 
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subCategoryFilter, setSubCategoryFilter] = useState('All');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
   // State for new product form
   const [newProductName, setNewProductName] = useState('');
@@ -53,6 +55,17 @@ export default function AdminPage() {
   const [newProductCategory, setNewProductCategory] = useState<ProductCategory | ''>('');
   const [newProductSubCategory, setNewProductSubCategory] = useState<ProductSubCategory | ''>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State for edit product form
+  const [editProductName, setEditProductName] = useState('');
+  const [editProductDescription, setEditProductDescription] = useState('');
+  const [editProductPrice, setEditProductPrice] = useState('');
+  const [editProductImage, setEditProductImage] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [editProductSizes, setEditProductSizes] = useState<ProductSize[]>([]);
+  const [editProductCategory, setEditProductCategory] = useState<ProductCategory | ''>('');
+  const [editProductSubCategory, setEditProductSubCategory] = useState<ProductSubCategory | ''>('');
+  const [isUpdating, setIsUpdating] = useState(false);
   
   const { toast } = useToast();
 
@@ -100,7 +113,7 @@ export default function AdminPage() {
     );
   }
   
-  const resetFormState = () => {
+  const resetAddFormState = () => {
     setNewProductName('');
     setNewProductDescription('');
     setNewProductPrice('');
@@ -129,41 +142,43 @@ export default function AdminPage() {
       setImagePreview(null);
     }
   };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileChange(e.dataTransfer.files[0]);
+  
+  const handleEditFileChange = (file: File | null) => {
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({ title: 'File too large', description: 'Please upload an image smaller than 10MB.', variant: 'destructive' });
+        return;
+      }
+      setEditProductImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleAddProduct = async () => {
-    if (!newProductName.trim()) {
-        toast({ title: 'Name Required', description: 'Please enter a product name.', variant: 'destructive' });
-        return;
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, isEdit = false) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      if (isEdit) {
+        handleEditFileChange(e.dataTransfer.files[0]);
+      } else {
+        handleFileChange(e.dataTransfer.files[0]);
+      }
     }
-     if (!newProductDescription.trim()) {
-        toast({ title: 'Description Required', description: 'Please enter a product description.', variant: 'destructive' });
+  };
+  
+  const handleAddProduct = async () => {
+    if (!newProductName.trim() || !newProductDescription.trim() || !newProductPrice || !newProductCategory || !newProductSubCategory || newProductSizes.length === 0) {
+        toast({ title: 'All fields required', description: 'Please fill out all product details.', variant: 'destructive' });
         return;
     }
     const priceValue = parseFloat(newProductPrice);
     if (isNaN(priceValue) || priceValue <= 0) {
         toast({ title: 'Invalid Price', description: 'Please enter a valid positive number for the price.', variant: 'destructive' });
         return;
-    }
-    if (!newProductCategory) {
-        toast({ title: 'Category Required', description: 'Please select a product category.', variant: 'destructive' });
-        return;
-    }
-    if (!newProductSubCategory) {
-        toast({ title: 'Sub-Category Required', description: 'Please select a product sub-category.', variant: 'destructive' });
-        return;
-    }
-    if (newProductSizes.length === 0) {
-      toast({ title: 'Sizes Required', description: 'Please select at least one size for the product.', variant: 'destructive' });
-      return;
     }
     
     setIsSubmitting(true);
@@ -191,6 +206,57 @@ export default function AdminPage() {
     }
   };
 
+  const handleOpenEditDialog = (product: Product) => {
+    setEditingProduct(product);
+    setEditProductName(product.name);
+    setEditProductDescription(product.description);
+    setEditProductPrice(product.price.toString());
+    setEditImagePreview(product.images[0] || null);
+    setEditProductSizes(product.sizes);
+    setEditProductCategory(product.category);
+    setEditProductSubCategory(product.subCategory);
+    setEditProductImage(null);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleUpdateProduct = async () => {
+    if (!editingProduct) return;
+
+    if (!editProductName.trim() || !editProductDescription.trim() || !editProductPrice || !editProductCategory || !editProductSubCategory || editProductSizes.length === 0) {
+        toast({ title: 'All fields required', description: 'Please fill out all product details.', variant: 'destructive' });
+        return;
+    }
+    const priceValue = parseFloat(editProductPrice);
+    if (isNaN(priceValue) || priceValue <= 0) {
+        toast({ title: 'Invalid Price', description: 'Please enter a valid positive number for the price.', variant: 'destructive' });
+        return;
+    }
+
+    setIsUpdating(true);
+
+    const updatedProductData: Partial<Omit<Product, 'id'>> = {
+      name: editProductName,
+      price: priceValue,
+      description: editProductDescription,
+      category: editProductCategory as ProductCategory,
+      subCategory: editProductSubCategory as ProductSubCategory,
+      images: [editImagePreview || 'https://placehold.co/600x800'],
+      sizes: editProductSizes,
+    };
+
+    try {
+      await updateProduct(editingProduct.id, updatedProductData);
+      toast({ title: 'Product Updated', description: `${updatedProductData.name} has been updated.` });
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to update product:", error);
+      toast({ title: 'Error', description: 'Could not update product. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsUpdating(false);
+      setEditingProduct(null);
+    }
+  };
+
   const handleRemoveProduct = async (id: string) => {
     try {
       await removeProduct(id);
@@ -211,7 +277,7 @@ export default function AdminPage() {
               onOpenChange={(open) => {
                 setIsAddDialogOpen(open);
                 if (!open) {
-                  resetFormState();
+                  resetAddFormState();
                 }
               }}
             >
@@ -230,7 +296,7 @@ export default function AdminPage() {
                         <div 
                         className="mt-2 flex justify-center rounded-lg border border-dashed border-input px-6 py-10"
                         onDragOver={handleDragOver}
-                        onDrop={handleDrop}
+                        onDrop={(e) => handleDrop(e)}
                         >
                         <div className="text-center">
                             {imagePreview ? (
@@ -330,6 +396,130 @@ export default function AdminPage() {
                 </DialogFooter>
             </DialogContent>
             </Dialog>
+
+            {/* Edit Product Dialog */}
+            <Dialog 
+              open={isEditDialogOpen} 
+              onOpenChange={(open) => {
+                setIsEditDialogOpen(open);
+                if (!open) {
+                  setEditingProduct(null);
+                }
+              }}
+            >
+            <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Product</DialogTitle>
+                  <DialogDescription>Update the details for this product.</DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[65vh] -mx-6">
+                  <div className="space-y-4 py-4 px-6">
+                    <div className="space-y-2">
+                        <Label>Product Image</Label>
+                        <div 
+                          className="mt-2 flex justify-center rounded-lg border border-dashed border-input px-6 py-10"
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, true)}
+                        >
+                          <div className="text-center">
+                            {editImagePreview ? (
+                              <Image src={editImagePreview} alt="Product preview" width={100} height={100} className="mx-auto h-24 w-24 object-contain rounded-md" />
+                            ) : (
+                              <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
+                            )}
+                            <div className="mt-4 flex text-sm leading-6 text-muted-foreground">
+                              <Label
+                                  htmlFor="edit-file-upload"
+                                  className="relative cursor-pointer rounded-md bg-background font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:text-primary/80"
+                              >
+                                  <span>Upload a file</span>
+                                  <input id="edit-file-upload" name="edit-file-upload" type="file" className="sr-only" accept="image/png, image/jpeg, image/gif" onChange={(e) => handleEditFileChange(e.target.files ? e.target.files[0] : null)} />
+                              </Label>
+                              <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-xs leading-5 text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                          </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-name">Product Name</Label>
+                        <Input id="edit-name" value={editProductName} onChange={(e) => setEditProductName(e.target.value)} />
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-description">Description</Label>
+                        <Textarea id="edit-description" placeholder="Describe the product" value={editProductDescription} onChange={(e) => setEditProductDescription(e.target.value)} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-price">Price</Label>
+                            <Input id="edit-price" type="number" step="0.01" value={editProductPrice} onChange={(e) => setEditProductPrice(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-category">Category</Label>
+                            <Select value={editProductCategory} onValueChange={(value) => setEditProductCategory(value as ProductCategory)}>
+                            <SelectTrigger id="edit-category">
+                                <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {allCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                            </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-subCategory">Sub-Category</Label>
+                        <Select value={editProductSubCategory} onValueChange={(value) => setEditProductSubCategory(value as ProductSubCategory)}>
+                        <SelectTrigger id="edit-subCategory">
+                            <SelectValue placeholder="Select sub-category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
+                        </SelectContent>
+                        </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <Label>Available Sizes</Label>
+                        <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
+                          {allSizes.map((size) => (
+                            <div key={size} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`size-edit-${size}`}
+                                checked={editProductSizes.includes(size)}
+                                onCheckedChange={(checked) => {
+                                  setEditProductSizes(prevSizes => 
+                                    checked 
+                                      ? [...prevSizes, size]
+                                      : prevSizes.filter(s => s !== size)
+                                  );
+                                }}
+                              />
+                              <Label htmlFor={`size-edit-${size}`} className="font-normal cursor-pointer">
+                                {size}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+                <DialogFooter>
+                    <Button type="button" onClick={handleUpdateProduct} disabled={isUpdating}>
+                      {isUpdating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : 'Save Changes'}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+            </Dialog>
+
             <Button variant="outline" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout
@@ -387,7 +577,7 @@ export default function AdminPage() {
                     <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-1/4" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-16" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredProducts.length > 0 ? (
@@ -401,9 +591,14 @@ export default function AdminPage() {
                     <TableCell>{product.subCategory}</TableCell>
                     <TableCell>₱{product.price.toFixed(2)}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => handleRemoveProduct(product.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className='flex items-center'>
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(product)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleRemoveProduct(product.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
