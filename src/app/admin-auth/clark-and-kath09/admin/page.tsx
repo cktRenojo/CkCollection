@@ -671,7 +671,7 @@ export default function AdminPage() {
                         <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(product)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => setProductToDelete(product)}>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive hover:text-destructive-foreground" onClick={() => setProductToDelete(product)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
