@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -56,20 +56,40 @@ export default function AdminPage() {
   
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Don't do anything while auth state is being determined.
-    if (authLoading) {
-      return;
-    }
+  // --- NEW, ROBUST AUTHENTICATION CHECK ---
+  // This logic is now sequential and eliminates the previous race condition.
+  
+  // 1. Wait for the authentication state to be determined.
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
-    // If loading is finished and the user is not an admin, redirect them.
-    if (!user) {
-      router.push('/admin-auth/login');
-    } else if (!isAdmin) {
-      router.push('/');
-    }
-  }, [user, isAdmin, authLoading, router]);
+  // 2. If loading is finished and there's no user, redirect to the admin login page.
+  if (!user) {
+    router.replace('/admin-auth/login');
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
+  // 3. If the user is logged in but is NOT an admin, redirect them to the user homepage.
+  if (!isAdmin) {
+    router.replace('/');
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+  
+  // 4. If all checks pass, render the admin dashboard.
+  
   const handleLogout = async () => {
     await logout();
     router.push('/admin-auth/login');
@@ -195,16 +215,6 @@ export default function AdminPage() {
       return categoryMatch && subCategoryMatch;
     });
   }, [products, categoryFilter, subCategoryFilter]);
-  
-  // Render a loading spinner until authentication is resolved. This prevents
-  // the component from making a premature redirection decision.
-  if (authLoading || !user || !isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 space-y-8">
