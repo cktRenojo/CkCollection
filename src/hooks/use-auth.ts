@@ -11,11 +11,11 @@ import {
   signOut,
   updateProfile,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult
+  signInWithPopup
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { useToast } from './use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -34,35 +34,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // This effect handles the result of a Google sign-in redirect.
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result) {
-          // A user has successfully signed in via redirect.
-          const user = result.user;
-          // Check if it's a new user and create a document in Firestore if so.
-          const userDocRef = doc(db, 'users', user.uid);
-          const userDocSnap = await getDoc(userDocRef);
-
-          if (!userDocSnap.exists()) {
-            await setDoc(doc(db, "users", user.uid), {
-              uid: user.uid,
-              displayName: user.displayName,
-              email: user.email,
-              role: 'user',
-              createdAt: new Date(),
-            });
-          }
-        }
-      })
-      .catch((error) => {
-        if (error.code !== 'auth/popup-closed-by-user') {
-          console.error("Google sign-in redirect error:", error);
-        }
-      });
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
@@ -116,9 +90,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
-    setLoading(true); // Set loading state before redirect
+    setLoading(true);
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          role: 'user',
+          createdAt: new Date(),
+        });
+        toast({
+          title: 'Account Created',
+          description: 'Welcome to C&K Collections!',
+        });
+      } else {
+         toast({
+          title: 'Login Successful',
+          description: "Welcome back!",
+        });
+      }
+    } catch (error: any) {
+      if (error.code !== 'auth/popup-closed-by-user') {
+        toast({
+          title: 'Sign-in Failed',
+          description: error.message || 'An unexpected error occurred.',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = async () => {
