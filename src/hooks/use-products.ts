@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -71,12 +72,20 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     const newDocRef = doc(collection(db, 'products'));
     const productId = newDocRef.id;
 
-    const newProductWithPlaceholder = {
-      ...productData,
-      images: ['https://placehold.co/600x800'],
+    // Build the document explicitly to be defensive against any stray properties.
+    const newProductDocument = {
+      name: productData.name,
+      description: productData.description,
+      price: productData.price,
+      category: productData.category,
+      subCategory: productData.subCategory,
+      sizes: productData.sizes,
+      quantity: productData.quantity,
+      dataAiHint: productData.dataAiHint || 'fashion apparel',
+      images: ['https://placehold.co/600x800'], // Start with a placeholder
     };
 
-    await setDoc(newDocRef, newProductWithPlaceholder);
+    await setDoc(newDocRef, newProductDocument);
 
     if (imageFile) {
       uploadImage(imageFile, productId)
@@ -87,7 +96,7 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
           console.error("Background image upload failed:", error);
           toast({
             title: 'Image Upload Failed',
-            description: `The image for ${productData.name} could not be uploaded. You can try updating it again from the edit menu.`,
+            description: `The image for ${productData.name} could not be uploaded. You can try updating it again later.`,
             variant: 'destructive',
           });
         });
@@ -96,9 +105,20 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   
   const updateProduct = async (productId: string, productData: Partial<Omit<Product, 'id' | 'images'>>, imageFile: File | null) => {
     const productRef = doc(db, 'products', productId);
-    const productUpdateData: Partial<Product> = { ...productData };
 
-    await updateDoc(productRef, productUpdateData);
+    // Build the update object explicitly to filter out undefined values.
+    const productUpdateData: { [key: string]: any } = {};
+    Object.keys(productData).forEach(key => {
+        const typedKey = key as keyof typeof productData;
+        if (productData[typedKey] !== undefined) {
+            productUpdateData[key] = productData[typedKey];
+        }
+    });
+    
+    // Only update if there's data to update
+    if (Object.keys(productUpdateData).length > 0) {
+        await updateDoc(productRef, productUpdateData);
+    }
 
     if (imageFile) {
       const currentProduct = products.find(p => p.id === productId);
@@ -114,7 +134,7 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
            console.error("Background image update failed:", error);
            toast({
             title: 'Image Update Failed',
-            description: `The new image for ${productData.name} could not be uploaded. Please try again.`,
+            description: `The new image for the product could not be uploaded. Please try again.`,
             variant: 'destructive',
           });
         });
@@ -128,6 +148,7 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
 
     if (productToDelete && productToDelete.images.length > 0 && productToDelete.images[0]) {
       deleteImage(productToDelete.images[0]).catch(error => {
+        // Don't bother the user if background deletion fails, just log it.
         console.error("Background image deletion failed:", error);
       });
     }
