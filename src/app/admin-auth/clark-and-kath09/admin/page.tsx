@@ -203,7 +203,6 @@ export default function AdminPage() {
     }
     
     setIsSubmitting(true);
-    let success = false;
     
     const newProduct: Omit<Product, 'id'> = {
       name: newProductName,
@@ -220,15 +219,10 @@ export default function AdminPage() {
     try {
       await addProduct(newProduct);
       toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-      success = true;
+      setIsAddDialogOpen(false);
     } catch (error) {
       console.error("Failed to add product:", error);
       toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
-    } finally {
-      if (success) {
-        setIsAddDialogOpen(false);
-        // The onOpenChange handler for the dialog will call resetAddFormState
-      }
       setIsSubmitting(false);
     }
   };
