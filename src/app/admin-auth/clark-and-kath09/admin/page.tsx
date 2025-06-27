@@ -573,7 +573,7 @@ export default function AdminPage() {
                   Logout
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="rounded-xl">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
                   <AlertDialogDescription>
@@ -583,10 +583,10 @@ export default function AdminPage() {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className={buttonVariants({ variant: "destructive" })}
+                    className={buttonVariants({ variant: "default" })}
                     onClick={handleLogout}
                   >
-                    Confirm
+                    Logout
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

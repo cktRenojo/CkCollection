@@ -175,23 +175,23 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <AlertDialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
             <AlertDialogDescription>
-              You will need to log in again to access your account.
+              You’ll need to sign in again to continue.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className={buttonVariants({ variant: "destructive" })}
+              className={buttonVariants({ variant: "default" })}
               onClick={() => {
                 handleLogout();
                 if(isMobileMenuOpen) setIsMobileMenuOpen(false);
               }}
             >
-              Confirm
+              Logout
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
