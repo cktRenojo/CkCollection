@@ -562,10 +562,10 @@ export default function AdminPage() {
               <TableRow>
                 <TableHead className="w-16 hidden sm:table-cell">Image</TableHead>
                 <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Sub-Category</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="w-[180px]">Category</TableHead>
+                <TableHead className="w-[180px]">Sub-Category</TableHead>
+                <TableHead className="w-[120px] text-right">Price</TableHead>
+                <TableHead className="w-[120px] text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -576,8 +576,13 @@ export default function AdminPage() {
                     <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-1/4" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-16" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-1/4 ml-auto" /></TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-2">
+                        <Skeleton className="h-10 w-10 rounded-md" />
+                        <Skeleton className="h-10 w-10 rounded-md" />
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : filteredProducts.length > 0 ? (
@@ -589,9 +594,9 @@ export default function AdminPage() {
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell>{product.subCategory}</TableCell>
-                    <TableCell>₱{product.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">₱{product.price.toFixed(2)}</TableCell>
                     <TableCell>
-                      <div className='flex items-center'>
+                      <div className='flex items-center justify-center'>
                         <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(product)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
