@@ -57,15 +57,16 @@ export default function AdminPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (authLoading) return; // Wait until loading is false
-
-    if (!user) {
-      router.push('/admin-auth/login');
+    // Don't do anything while auth state is being determined.
+    if (authLoading) {
       return;
     }
 
-    if (!isAdmin) {
-      router.push('/'); // If user is not an admin, redirect to home page
+    // If loading is finished and the user is not an admin, redirect them.
+    if (!user) {
+      router.push('/admin-auth/login');
+    } else if (!isAdmin) {
+      router.push('/');
     }
   }, [user, isAdmin, authLoading, router]);
 
@@ -195,6 +196,8 @@ export default function AdminPage() {
     });
   }, [products, categoryFilter, subCategoryFilter]);
   
+  // Render a loading spinner until authentication is resolved. This prevents
+  // the component from making a premature redirection decision.
   if (authLoading || !user || !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
