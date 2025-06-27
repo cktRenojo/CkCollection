@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import type { Product, ProductCategory, ProductSubCategory, ProductSize } from '@/lib/types';
 import Image from 'next/image';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, UploadCloud, LogOut, Loader2 } from 'lucide-react';
+import { Trash2, UploadCloud, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -34,18 +33,6 @@ const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
 
 
 export default function AdminPage() {
-  const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  useEffect(() => {
-    const authStatus = typeof window !== 'undefined' ? localStorage.getItem('isAdminAuthenticated') : null;
-    if (authStatus !== 'true') {
-      router.push('/admin/login');
-    } else {
-      setIsAuthenticated(true);
-    }
-  }, [router]);
-  
   const { products, addProduct, removeProduct, loading } = useProducts();
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [subCategoryFilter, setSubCategoryFilter] = useState('All');
@@ -76,11 +63,6 @@ export default function AdminPage() {
     return uniqueSubCategories.sort();
   }, [products]);
   
-  const handleLogout = () => {
-    localStorage.removeItem('isAdminAuthenticated');
-    router.push('/admin/login');
-  };
-
   const resetFormState = () => {
     setNewProductName('');
     setNewProductDescription('');
@@ -192,14 +174,6 @@ export default function AdminPage() {
     });
   }, [products, categoryFilter, subCategoryFilter]);
 
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 space-y-8">
@@ -330,9 +304,6 @@ export default function AdminPage() {
                 </DialogFooter>
             </DialogContent>
             </Dialog>
-            <Button variant="outline" size="icon" onClick={handleLogout} aria-label="Log out">
-                <LogOut className="h-4 w-4" />
-            </Button>
         </div>
       </div>
       

@@ -1,22 +1,6 @@
 
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-
-/**
- * This page is deprecated and now redirects to the main admin login page.
- */
+// This page has been intentionally left blank.
+// The login functionality has been removed.
 export default function DeprecatedLoginPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/admin/login');
-  }, [router]);
-
-  return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-  );
+  return null;
 }
