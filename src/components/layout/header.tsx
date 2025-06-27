@@ -25,6 +25,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/', label: 'Women' },
@@ -157,6 +158,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {isAdmin && <div className="flex-1"></div>}
+
         <Link href={isAdmin ? "/admin-auth/clark-and-kath09/admin" : "/"} className="text-2xl font-bold font-headline">
           C&K Collections
         </Link>
@@ -175,7 +178,10 @@ export default function Header() {
           </nav>
         )}
 
-        <div className="flex items-center space-x-2">
+        <div className={cn(
+            "flex items-center space-x-2",
+            isAdmin && "flex-1 justify-end"
+        )}>
           <AuthNav />
           
           {!isAdmin && (
