@@ -36,7 +36,7 @@ const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
 
 export default function AdminPage() {
   const { products, addProduct, removeProduct, loading: productsLoading } = useProducts();
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, isAdmin, loading: authLoading, logout } = useAuth();
   const router = useRouter();
 
   const [categoryFilter, setCategoryFilter] = useState('All');
@@ -57,14 +57,21 @@ export default function AdminPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/admin/login');
+    if (authLoading) return; // Wait until loading is false
+
+    if (!user) {
+      router.push('/admin-auth/login');
+      return;
     }
-  }, [user, authLoading, router]);
+
+    if (!isAdmin) {
+      router.push('/'); // If user is not an admin, redirect to home page
+    }
+  }, [user, isAdmin, authLoading, router]);
 
   const handleLogout = async () => {
     await logout();
-    router.push('/admin/login');
+    router.push('/admin-auth/login');
   };
 
   const availableCategories = useMemo(() => {
@@ -188,7 +195,7 @@ export default function AdminPage() {
     });
   }, [products, categoryFilter, subCategoryFilter]);
   
-  if (authLoading || !user) {
+  if (authLoading || !user || !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
