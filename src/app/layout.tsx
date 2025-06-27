@@ -21,12 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className={cn('font-body antialiased h-full flex flex-col')} suppressHydrationWarning>
+      <body className={cn('antialiased h-full flex flex-col')} suppressHydrationWarning>
         <AuthProvider>
           <ProductsProvider>
             <CartProvider>
