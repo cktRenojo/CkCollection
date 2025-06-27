@@ -6,48 +6,48 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 244 33% 20%;
+    --background: 240 60% 96%; /* Very light desaturated lavender */
+    --foreground: 230 20% 25%;
     --card: 0 0% 100%;
-    --card-foreground: 244 33% 20%;
+    --card-foreground: 230 20% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 244 33% 20%;
-    --primary: 244 33% 30%;
-    --primary-foreground: 248 100% 98%;
-    --secondary: 248 100% 98%;
-    --secondary-foreground: 244 33% 30%;
-    --muted: 248 100% 98%;
-    --muted-foreground: 244 33% 50%;
-    --accent: 258 55% 96%;
-    --accent-foreground: 244 33% 30%;
+    --popover-foreground: 230 20% 25%;
+    --primary: 231 48% 55%; /* Muted Indigo */
+    --primary-foreground: 240 100% 99%;
+    --secondary: 231 48% 95%;
+    --secondary-foreground: 231 48% 30%;
+    --muted: 231 48% 97%;
+    --muted-foreground: 231 30% 60%;
+    --accent: 261 46% 63%; /* Soft Violet */
+    --accent-foreground: 240 100% 99%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 244 33% 90%;
-    --input: 244 33% 90%;
-    --ring: 244 33% 50%;
+    --border: 231 20% 85%;
+    --input: 231 20% 90%;
+    --ring: 231 48% 55%;
     --radius: 0.5rem;
   }
+
   .dark {
-    /* Using a light theme for dark mode to avoid the harsh background issue */
-    --background: 0 0% 100%;
-    --foreground: 244 33% 20%;
-    --card: 0 0% 100%;
-    --card-foreground: 244 33% 20%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 244 33% 20%;
-    --primary: 244 33% 30%;
-    --primary-foreground: 248 100% 98%;
-    --secondary: 248 100% 98%;
-    --secondary-foreground: 244 33% 30%;
-    --muted: 248 100% 98%;
-    --muted-foreground: 244 33% 50%;
-    --accent: 258 55% 96%;
-    --accent-foreground: 244 33% 30%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 230 20% 10%;
+    --foreground: 240 60% 96%;
+    --card: 230 20% 15%;
+    --card-foreground: 240 60% 96%;
+    --popover: 230 20% 15%;
+    --popover-foreground: 240 60% 96%;
+    --primary: 231 48% 65%;
+    --primary-foreground: 240 100% 99%;
+    --secondary: 231 48% 25%;
+    --secondary-foreground: 231 48% 80%;
+    --muted: 231 48% 20%;
+    --muted-foreground: 231 30% 70%;
+    --accent: 261 46% 73%;
+    --accent-foreground: 240 100% 99%;
+    --destructive: 0 74.2% 50.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 244 33% 90%;
-    --input: 244 33% 90%;
-    --ring: 244 33% 50%;
+    --border: 231 20% 30%;
+    --input: 231 20% 35%;
+    --ring: 231 48% 65%;
   }
 }
 
@@ -60,7 +60,7 @@
     font-family: 'PT Sans', sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
+    font-family: 'Playfair Display', serif;
   }
 }
 
