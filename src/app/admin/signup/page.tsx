@@ -9,7 +9,7 @@ export default function OldAdminSignupPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/admin-auth/signup');
+    router.replace('/admin-auth/clark-and-kath09/signup');
   }, [router]);
 
   return (

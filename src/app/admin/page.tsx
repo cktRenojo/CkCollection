@@ -77,18 +77,21 @@ export default function AdminPage() {
   }, [products, categoryFilter, subCategoryFilter]);
 
   useEffect(() => {
-    // This effect handles redirection logic based on authentication state.
-    // It runs after the component has rendered to avoid state updates during render.
     if (authLoading) {
-      return; // Still loading, do nothing yet.
+      return; // Wait until authentication check is complete
     }
     if (!user) {
-      router.replace('/admin-auth/login');
+      router.replace('/admin-auth/clark-and-kath09/login');
     } else if (!isAdmin) {
       router.replace('/');
     }
   }, [authLoading, user, isAdmin, router]);
   
+  const handleLogout = async () => {
+    await logout();
+    router.push('/admin-auth/clark-and-kath09/login');
+  };
+
   // While authentication is in progress, or if the user is not a logged-in admin,
   // display a loading spinner. This prevents the admin dashboard from flashing on screen
   // for unauthorized users before the redirect happens.
@@ -99,11 +102,6 @@ export default function AdminPage() {
       </div>
     );
   }
-  
-  const handleLogout = async () => {
-    await logout();
-    router.push('/admin-auth/login');
-  };
   
   const resetFormState = () => {
     setNewProductName('');
