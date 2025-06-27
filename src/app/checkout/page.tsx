@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CheckoutPage() {
   const { user, loading: authLoading } = useAuth();
