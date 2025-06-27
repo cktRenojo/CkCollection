@@ -12,13 +12,19 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
+const GoogleIcon = () => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+      <path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.9-4.82 1.9-4.14 0-7.5-3.38-7.5-7.5s3.36-7.5 7.5-7.5c2.25 0 3.82.87 4.78 1.8l2.74-2.74C19.02 1.18 16.25 0 12.48 0 5.88 0 0 5.88 0 12.48s5.88 12.48 12.48 12.48c7.14 0 12.02-4.92 12.02-12.02 0-.8-.08-1.56-.2-2.32H12.48z" />
+    </svg>
+);
+
 export default function SignupPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signupUser } = useAuth();
+  const { signupUser, signInWithGoogle } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -50,6 +56,27 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      toast({
+        title: 'Signup Successful',
+        description: 'Welcome to C&K Collections!',
+      });
+      router.push('/');
+    } catch (error: any) {
+      toast({
+        title: 'Signup Failed',
+        description: error.message || 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] bg-background px-4">
@@ -107,6 +134,22 @@ export default function SignupPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="animate-spin" /> : 'Create Account'}
             </Button>
+
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <Button variant="outline" type="button" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" /> : <><GoogleIcon /> Google</>}
+            </Button>
+            
             <p className="text-sm text-center text-muted-foreground">
               Already have an account?{' '}
               <Link href="/auth/login" className="font-semibold text-primary hover:underline">

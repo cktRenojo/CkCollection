@@ -9,7 +9,9 @@ import {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut,
-  updateProfile
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -22,6 +24,7 @@ interface AuthContextType {
   signupUser: (fullName: string, email: string, password: string) => Promise<User>;
   signupAdmin: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
+  signInWithGoogle: () => Promise<{ user: User, isAdmin: boolean }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -90,6 +93,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return userCredential;
   };
 
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    const user = userCredential.user;
+
+    // Check if user exists in our 'users' collection, if not, create them
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (!userDocSnap.exists()) {
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        role: 'user',
+        createdAt: new Date(),
+      });
+    }
+    
+    const adminRef = doc(db, 'admins', user.uid);
+    const adminSnap = await getDoc(adminRef);
+    const isAdmin = adminSnap.exists();
+    
+    setUser(user);
+    setIsAdmin(isAdmin);
+
+    return { user, isAdmin };
+  };
+
   const logout = async () => {
     await signOut(auth);
     setUser(null);
@@ -104,6 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signupUser,
     signupAdmin,
     logout,
+    signInWithGoogle,
   };
 
   return React.createElement(AuthContext.Provider, { value }, children);
