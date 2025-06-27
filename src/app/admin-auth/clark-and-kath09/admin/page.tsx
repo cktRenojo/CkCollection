@@ -30,7 +30,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 
 const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Unisex'];
-const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt'];
+const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt', 'Shorts', 'Shoes'];
 const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
 
 
@@ -49,6 +49,7 @@ export default function AdminPage() {
   const [newProductName, setNewProductName] = useState('');
   const [newProductDescription, setNewProductDescription] = useState('');
   const [newProductPrice, setNewProductPrice] = useState('');
+  const [newProductQuantity, setNewProductQuantity] = useState('');
   const [newProductImage, setNewProductImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [newProductSizes, setNewProductSizes] = useState<ProductSize[]>([]);
@@ -60,6 +61,7 @@ export default function AdminPage() {
   const [editProductName, setEditProductName] = useState('');
   const [editProductDescription, setEditProductDescription] = useState('');
   const [editProductPrice, setEditProductPrice] = useState('');
+  const [editProductQuantity, setEditProductQuantity] = useState('');
   const [editProductImage, setEditProductImage] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
   const [editProductSizes, setEditProductSizes] = useState<ProductSize[]>([]);
@@ -117,6 +119,7 @@ export default function AdminPage() {
     setNewProductName('');
     setNewProductDescription('');
     setNewProductPrice('');
+    setNewProductQuantity('');
     setNewProductImage(null);
     setImagePreview(null);
     setNewProductSizes([]);
@@ -171,13 +174,18 @@ export default function AdminPage() {
   };
   
   const handleAddProduct = async () => {
-    if (!newProductName.trim() || !newProductDescription.trim() || !newProductPrice || !newProductCategory || !newProductSubCategory || newProductSizes.length === 0) {
+    if (!newProductName.trim() || !newProductDescription.trim() || !newProductPrice || !newProductQuantity || !newProductCategory || !newProductSubCategory || newProductSizes.length === 0) {
         toast({ title: 'All fields required', description: 'Please fill out all product details.', variant: 'destructive' });
         return;
     }
     const priceValue = parseFloat(newProductPrice);
     if (isNaN(priceValue) || priceValue <= 0) {
         toast({ title: 'Invalid Price', description: 'Please enter a valid positive number for the price.', variant: 'destructive' });
+        return;
+    }
+    const quantityValue = parseInt(newProductQuantity, 10);
+    if (isNaN(quantityValue) || quantityValue < 0) {
+        toast({ title: 'Invalid Quantity', description: 'Please enter a valid non-negative number for the quantity.', variant: 'destructive' });
         return;
     }
     
@@ -192,6 +200,7 @@ export default function AdminPage() {
       subCategory: newProductSubCategory as ProductSubCategory,
       images: [imagePreview || 'https://placehold.co/600x800'],
       sizes: newProductSizes,
+      quantity: quantityValue,
       dataAiHint: 'fashion apparel',
     };
 
@@ -216,6 +225,7 @@ export default function AdminPage() {
     setEditProductName(product.name);
     setEditProductDescription(product.description);
     setEditProductPrice(product.price.toString());
+    setEditProductQuantity(product.quantity?.toString() ?? '0');
     setEditImagePreview(product.images[0] || null);
     setEditProductSizes(product.sizes);
     setEditProductCategory(product.category);
@@ -227,13 +237,18 @@ export default function AdminPage() {
   const handleUpdateProduct = async () => {
     if (!editingProduct) return;
 
-    if (!editProductName.trim() || !editProductDescription.trim() || !editProductPrice || !editProductCategory || !editProductSubCategory || editProductSizes.length === 0) {
+    if (!editProductName.trim() || !editProductDescription.trim() || !editProductPrice || !editProductQuantity || !editProductCategory || !editProductSubCategory || editProductSizes.length === 0) {
         toast({ title: 'All fields required', description: 'Please fill out all product details.', variant: 'destructive' });
         return;
     }
     const priceValue = parseFloat(editProductPrice);
     if (isNaN(priceValue) || priceValue <= 0) {
         toast({ title: 'Invalid Price', description: 'Please enter a valid positive number for the price.', variant: 'destructive' });
+        return;
+    }
+    const quantityValue = parseInt(editProductQuantity, 10);
+    if (isNaN(quantityValue) || quantityValue < 0) {
+        toast({ title: 'Invalid Quantity', description: 'Please enter a valid non-negative number for the quantity.', variant: 'destructive' });
         return;
     }
 
@@ -247,6 +262,7 @@ export default function AdminPage() {
       subCategory: editProductSubCategory as ProductSubCategory,
       images: [editImagePreview || 'https://placehold.co/600x800'],
       sizes: editProductSizes,
+      quantity: quantityValue,
     };
 
     try {
@@ -333,12 +349,19 @@ export default function AdminPage() {
                         <Label htmlFor="description">Description</Label>
                         <Textarea id="description" name="description" placeholder="Describe the product" value={newProductDescription} onChange={(e) => setNewProductDescription(e.target.value)} />
                     </div>
-
+                    
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="price">Price</Label>
                             <Input id="price" name="price" type="number" step="0.01" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} />
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="quantity">Quantity</Label>
+                            <Input id="quantity" name="quantity" type="number" value={newProductQuantity} onChange={(e) => setNewProductQuantity(e.target.value)} />
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="category">Category</Label>
                             <Select name="category" value={newProductCategory} onValueChange={(value) => setNewProductCategory(value as ProductCategory)}>
@@ -350,18 +373,17 @@ export default function AdminPage() {
                             </SelectContent>
                             </Select>
                         </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <Label htmlFor="subCategory">Sub-Category</Label>
-                        <Select name="subCategory" value={newProductSubCategory} onValueChange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
-                        <SelectTrigger id="subCategory">
-                            <SelectValue placeholder="Select sub-category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
-                        </SelectContent>
-                        </Select>
+                        <div className="space-y-2">
+                            <Label htmlFor="subCategory">Sub-Category</Label>
+                            <Select name="subCategory" value={newProductSubCategory} onValueChange={(value) => setNewProductSubCategory(value as ProductSubCategory)}>
+                            <SelectTrigger id="subCategory">
+                                <SelectValue placeholder="Select sub-category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
+                            </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     
                     <div className="space-y-2">
@@ -463,6 +485,13 @@ export default function AdminPage() {
                             <Input id="edit-price" type="number" step="0.01" value={editProductPrice} onChange={(e) => setEditProductPrice(e.target.value)} />
                         </div>
                         <div className="space-y-2">
+                            <Label htmlFor="edit-quantity">Quantity</Label>
+                            <Input id="edit-quantity" type="number" value={editProductQuantity} onChange={(e) => setEditProductQuantity(e.target.value)} />
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
                             <Label htmlFor="edit-category">Category</Label>
                             <Select value={editProductCategory} onValueChange={(value) => setEditProductCategory(value as ProductCategory)}>
                             <SelectTrigger id="edit-category">
@@ -473,18 +502,17 @@ export default function AdminPage() {
                             </SelectContent>
                             </Select>
                         </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <Label htmlFor="edit-subCategory">Sub-Category</Label>
-                        <Select value={editProductSubCategory} onValueChange={(value) => setEditProductSubCategory(value as ProductSubCategory)}>
-                        <SelectTrigger id="edit-subCategory">
-                            <SelectValue placeholder="Select sub-category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
-                        </SelectContent>
-                        </Select>
+                         <div className="space-y-2">
+                            <Label htmlFor="edit-subCategory">Sub-Category</Label>
+                            <Select value={editProductSubCategory} onValueChange={(value) => setEditProductSubCategory(value as ProductSubCategory)}>
+                            <SelectTrigger id="edit-subCategory">
+                                <SelectValue placeholder="Select sub-category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {allSubCategories.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)}
+                            </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     
                     <div className="space-y-2">
@@ -570,6 +598,7 @@ export default function AdminPage() {
                 <TableHead className="w-[180px]">Category</TableHead>
                 <TableHead className="w-[180px]">Sub-Category</TableHead>
                 <TableHead className="w-[120px] text-right">Price</TableHead>
+                <TableHead className="w-[120px] text-right">Quantity</TableHead>
                 <TableHead className="w-[120px] text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -581,6 +610,7 @@ export default function AdminPage() {
                     <TableCell><Skeleton className="h-4 w-3/4" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-1/2" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-1/4 ml-auto" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-4 w-1/4 ml-auto" /></TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-2">
@@ -600,6 +630,7 @@ export default function AdminPage() {
                     <TableCell>{product.category}</TableCell>
                     <TableCell>{product.subCategory}</TableCell>
                     <TableCell className="text-right">₱{product.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{product.quantity ?? 0}</TableCell>
                     <TableCell>
                       <div className='flex items-center justify-center'>
                         <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(product)}>
@@ -614,7 +645,7 @@ export default function AdminPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     No products found.
                   </TableCell>
                 </TableRow>
