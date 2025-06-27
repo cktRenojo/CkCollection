@@ -5,13 +5,13 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 /**
- * This page is deprecated and now redirects to the main login page.
+ * This page is deprecated and now redirects to the main admin login page.
  */
 export default function DeprecatedLoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/auth/login');
+    router.replace('/admin/login');
   }, [router]);
 
   return (

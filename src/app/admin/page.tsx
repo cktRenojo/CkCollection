@@ -40,7 +40,7 @@ export default function AdminPage() {
   useEffect(() => {
     const authStatus = typeof window !== 'undefined' ? localStorage.getItem('isAdminAuthenticated') : null;
     if (authStatus !== 'true') {
-      router.push('/auth/login');
+      router.push('/admin/login');
     } else {
       setIsAuthenticated(true);
     }
@@ -78,7 +78,7 @@ export default function AdminPage() {
   
   const handleLogout = () => {
     localStorage.removeItem('isAdminAuthenticated');
-    router.push('/auth/login');
+    router.push('/admin/login');
   };
 
   const resetFormState = () => {
@@ -120,7 +120,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddProduct = async () => {
+  const handleAddProduct = () => {
     if (!newProductName.trim()) {
         toast({ title: 'Name Required', description: 'Please enter a product name.', variant: 'destructive' });
         return;
@@ -148,27 +148,30 @@ export default function AdminPage() {
     }
     
     setIsSubmitting(true);
-    try {
-      const newProduct: Omit<Product, 'id'> = {
-        name: newProductName,
-        price: priceValue,
-        description: newProductDescription,
-        category: newProductCategory as ProductCategory,
-        subCategory: newProductSubCategory as ProductSubCategory,
-        images: [imagePreview || 'https://placehold.co/600x800'],
-        sizes: newProductSizes,
-        dataAiHint: 'fashion apparel',
-      };
-      
-      await addProduct(newProduct);
-      toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
-      setIsAddDialogOpen(false);
-    } catch (error) {
-      console.error("Failed to add product:", error);
-      toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
-    } finally {
-      setIsSubmitting(false);
-    }
+    
+    const newProduct: Omit<Product, 'id'> = {
+      name: newProductName,
+      price: priceValue,
+      description: newProductDescription,
+      category: newProductCategory as ProductCategory,
+      subCategory: newProductSubCategory as ProductSubCategory,
+      images: [imagePreview || 'https://placehold.co/600x800'],
+      sizes: newProductSizes,
+      dataAiHint: 'fashion apparel',
+    };
+
+    addProduct(newProduct)
+      .then(() => {
+        toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
+        setIsAddDialogOpen(false);
+      })
+      .catch((error) => {
+        console.error("Failed to add product:", error);
+        toast({ title: 'Error', description: 'Could not add product. Please try again.', variant: 'destructive' });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
   };
 
   const handleRemoveProduct = async (id: string) => {

@@ -13,9 +13,6 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'password123';
-
 export default function UserLoginPage() {
   const { login } = useAuth();
   const router = useRouter();
@@ -32,14 +29,6 @@ export default function UserLoginPage() {
     }
 
     setIsLoading(true);
-
-    // Check for admin credentials first to prevent incorrect redirects.
-    if (email === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      localStorage.setItem('isAdminAuthenticated', 'true');
-      // Use window.location.replace for a full page reload to avoid router state conflicts
-      window.location.replace('/admin');
-      return;
-    }
 
     try {
       await login(email, password);
@@ -75,13 +64,13 @@ export default function UserLoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email or Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com or admin"
+                placeholder="you@example.com"
                 required
                 disabled={isLoading}
               />
