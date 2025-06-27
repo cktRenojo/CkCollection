@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { ShoppingBag, Menu, X, LogOut, User as UserIcon, LogIn, UserPlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { Cart } from '@/components/cart';
 import {
@@ -20,6 +20,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -40,6 +50,7 @@ export default function Header() {
   const { cartCount } = useCart();
   const { user, isAdmin, loading, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const router = useRouter();
   const isMounted = useMounted();
 
@@ -90,7 +101,11 @@ export default function Header() {
                 <span>Admin Dashboard</span>
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem
+              onSelect={(e) => e.preventDefault()}
+              onClick={() => setIsLogoutConfirmOpen(true)}
+              className="text-destructive focus:text-destructive"
+            >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>
@@ -138,7 +153,7 @@ export default function Header() {
                     <UserIcon className="mr-2 h-5 w-5" /> Admin
                   </Link>
                 )}
-                <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="flex items-center w-full text-left p-2 text-lg text-destructive">
+                <button onClick={() => setIsLogoutConfirmOpen(true)} className="flex items-center w-full text-left p-2 text-lg text-destructive">
                     <LogOut className="mr-2 h-5 w-5" /> Logout
                 </button>
             </div>
@@ -159,6 +174,29 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
+      <AlertDialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will need to log in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={() => {
+                handleLogout();
+                if(isMobileMenuOpen) setIsMobileMenuOpen(false);
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {isAdmin && <div className="flex-1"></div>}
 
