@@ -56,13 +56,32 @@ export default function AdminPage() {
   
   const { toast } = useToast();
 
-  useEffect(() => {
-    // While authentication is in progress, do nothing. The loading spinner will be displayed.
-    if (authLoading) {
-      return;
-    }
+  const availableCategories = useMemo(() => {
+    if (!products.length) return [];
+    const uniqueCategories = [...new Set(products.map((p) => p.category))];
+    return uniqueCategories.sort();
+  }, [products]);
 
-    // After loading, redirect if the user is not a logged-in admin.
+  const availableSubCategories = useMemo(() => {
+    if (!products.length) return [];
+    const uniqueSubCategories = [...new Set(products.map((p) => p.subCategory))];
+    return uniqueSubCategories.sort();
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const categoryMatch = categoryFilter === 'All' || product.category === categoryFilter;
+      const subCategoryMatch = subCategoryFilter === 'All' || product.subCategory === subCategoryFilter;
+      return categoryMatch && subCategoryMatch;
+    });
+  }, [products, categoryFilter, subCategoryFilter]);
+
+  useEffect(() => {
+    // This effect handles redirection logic based on authentication state.
+    // It runs after the component has rendered to avoid state updates during render.
+    if (authLoading) {
+      return; // Still loading, do nothing yet.
+    }
     if (!user) {
       router.replace('/admin-auth/login');
     } else if (!isAdmin) {
@@ -70,10 +89,9 @@ export default function AdminPage() {
     }
   }, [authLoading, user, isAdmin, router]);
   
-  // Display a loading spinner until the authentication check is complete
-  // and we've confirmed the user is an authorized admin. This prevents
-  // the admin dashboard from flashing on screen for non-admin users
-  // before the redirect happens.
+  // While authentication is in progress, or if the user is not a logged-in admin,
+  // display a loading spinner. This prevents the admin dashboard from flashing on screen
+  // for unauthorized users before the redirect happens.
   if (authLoading || !user || !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -86,18 +104,6 @@ export default function AdminPage() {
     await logout();
     router.push('/admin-auth/login');
   };
-
-  const availableCategories = useMemo(() => {
-    if (!products.length) return [];
-    const uniqueCategories = [...new Set(products.map((p) => p.category))];
-    return uniqueCategories.sort();
-  }, [products]);
-
-  const availableSubCategories = useMemo(() => {
-    if (!products.length) return [];
-    const uniqueSubCategories = [...new Set(products.map((p) => p.subCategory))];
-    return uniqueSubCategories.sort();
-  }, [products]);
   
   const resetFormState = () => {
     setNewProductName('');
@@ -199,14 +205,6 @@ export default function AdminPage() {
        toast({ title: 'Error', description: 'Could not remove product. Please try again.', variant: 'destructive' });
     }
   };
-
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const categoryMatch = categoryFilter === 'All' || product.category === categoryFilter;
-      const subCategoryMatch = subCategoryFilter === 'All' || product.subCategory === subCategoryFilter;
-      return categoryMatch && subCategoryMatch;
-    });
-  }, [products, categoryFilter, subCategoryFilter]);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 space-y-8">
