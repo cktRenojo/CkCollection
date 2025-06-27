@@ -15,7 +15,7 @@ import {z} from 'genkit';
 const ProductRecommendationsInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
   productDescription: z.string().describe('The description of the product.'),
-  productCategory: z.string().describe('The category of the product (e.g., Women, Men, New Arrivals, Best Sellers).'),
+  productCategory: z.string().describe('The category of the product (e.g., Women, Men, New Arrivals, Unisex).'),
   productPrice: z.number().describe('The price of the product.'),
 });
 export type ProductRecommendationsInput = z.infer<typeof ProductRecommendationsInputSchema>;
