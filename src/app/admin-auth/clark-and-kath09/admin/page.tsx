@@ -204,21 +204,20 @@ export default function AdminPage() {
     
     setIsSubmitting(true);
     
-    const newProduct: Omit<Product, 'id'> = {
+    const productData: Omit<Product, 'id' | 'images'> = {
       name: newProductName,
       price: priceValue,
       description: newProductDescription,
       category: newProductCategory as ProductCategory,
       subCategory: newProductSubCategory as ProductSubCategory,
-      images: [imagePreview || 'https://placehold.co/600x800'],
       sizes: newProductSizes,
       quantity: quantityValue,
       dataAiHint: 'fashion apparel',
     };
 
     try {
-      await addProduct(newProduct);
-      toast({ title: 'Product Added', description: `${newProduct.name} has been added.` });
+      await addProduct(productData, newProductImage);
+      toast({ title: 'Product Added', description: `${productData.name} has been added.` });
       setIsAddDialogOpen(false);
     } catch (error) {
       console.error("Failed to add product:", error);
@@ -262,20 +261,19 @@ export default function AdminPage() {
 
     setIsUpdating(true);
 
-    const updatedProductData: Partial<Omit<Product, 'id'>> = {
+    const productData: Partial<Omit<Product, 'id' | 'images'>> = {
       name: editProductName,
       price: priceValue,
       description: editProductDescription,
       category: editProductCategory as ProductCategory,
       subCategory: editProductSubCategory as ProductSubCategory,
-      images: [editImagePreview || 'https://placehold.co/600x800'],
       sizes: editProductSizes,
       quantity: quantityValue,
     };
 
     try {
-      await updateProduct(editingProduct.id, updatedProductData);
-      toast({ title: 'Product Updated', description: `${updatedProductData.name} has been updated.` });
+      await updateProduct(editingProduct.id, productData, editProductImage);
+      toast({ title: 'Product Updated', description: `${productData.name} has been updated.` });
       setIsEditDialogOpen(false);
     } catch (error) {
       console.error("Failed to update product:", error);
@@ -562,12 +560,6 @@ export default function AdminPage() {
             </Dialog>
 
             <AlertDialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </Button>
-              </AlertDialogTrigger>
               <AlertDialogContent className="rounded-xl">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
