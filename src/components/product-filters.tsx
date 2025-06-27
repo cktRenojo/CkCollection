@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -19,8 +20,13 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
 
   const categories = useMemo(() => {
     if (!products.length) return ['All'];
-    const uniqueCategories = [...new Set(products.map((p) => p.category))];
-    return ['All', ...uniqueCategories.sort()];
+    const productCategories = new Set(products.map((p) => p.category).filter(Boolean) as string[]);
+    productCategories.add('All');
+    return [...productCategories].sort((a, b) => {
+      if (a === 'All') return -1;
+      if (b === 'All') return 1;
+      return a.localeCompare(b);
+    });
   }, [products]);
 
   const subCategories = useMemo(() => {
@@ -29,8 +35,15 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
       filters.category === 'All'
         ? products
         : products.filter((p) => p.category === filters.category);
-    const uniqueSubCategories = [...new Set(filteredProducts.map((p) => p.subCategory))];
-    return ['All', ...uniqueSubCategories.sort()];
+    
+    const productSubCategories = new Set(filteredProducts.map((p) => p.subCategory).filter(Boolean) as string[]);
+    productSubCategories.add('All');
+
+    return [...productSubCategories].sort((a, b) => {
+      if (a === 'All') return -1;
+      if (b === 'All') return 1;
+      return a.localeCompare(b);
+    });
   }, [products, filters.category]);
 
 
