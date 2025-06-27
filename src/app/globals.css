@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,30 +9,30 @@ body {
 
 @layer base {
   :root {
-    --background: 33 14% 95%; /* Lighter off-white for a softer feel */
-    --foreground: 163 25% 30.4%;
-    --card: 0 0% 100%; /* White cards to pop against the background */
-    --card-foreground: 163 25% 30.4%;
+    --background: 69 58% 86%;
+    --foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
     --popover: 0 0% 100%;
-    --popover-foreground: 163 25% 30.4%;
-    --primary: 163 25% 30.4%;
-    --primary-foreground: 33 14% 95%;
-    --secondary: 157 12% 59.4%;
-    --secondary-foreground: 33 14% 95%;
-    --muted: 157 12% 88%;
-    --muted-foreground: 157 25% 45%;
-    --accent: 44 30% 72.2%;
-    --accent-foreground: 163 25% 30.4%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    --primary: 231 48% 55%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 210 40% 9.8%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 261 48% 63%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 157 12% 88%;
-    --input: 157 12% 88%;
-    --ring: 163 25% 30.4%;
-    --chart-1: 157 25% 70%;
-    --chart-2: 157 25% 60%;
-    --chart-3: 157 25% 50%;
-    --chart-4: 157 25% 40%;
-    --chart-5: 157 25% 30%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 231 48% 55%;
+    --chart-1: 231 48% 75%;
+    --chart-2: 231 48% 65%;
+    --chart-3: 231 48% 55%;
+    --chart-4: 231 48% 45%;
+    --chart-5: 231 48% 35%;
     --radius: 0.5rem;
   }
   .dark {
