@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   isAdmin: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<any>;
+  login: (email: string, password: string) => Promise<{ user: User, isAdmin: boolean }>;
   signupAdmin: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
 }
@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
       if (user) {
         setUser(user);
         const adminRef = doc(db, 'admins', user.uid);
@@ -46,8 +47,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const login = (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  const login = async (email: string, password: string) => {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    const adminRef = doc(db, 'admins', user.uid);
+    const adminSnap = await getDoc(adminRef);
+    const isAdmin = adminSnap.exists();
+    
+    // We update the state here as well to ensure UI consistency, 
+    // though onAuthStateChanged will also fire.
+    setUser(user);
+    setIsAdmin(isAdmin);
+
+    return { user, isAdmin };
   };
 
   const signupAdmin = async (email: string, password: string) => {

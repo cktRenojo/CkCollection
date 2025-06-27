@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -24,8 +24,19 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(email, password);
-      router.push('/admin');
+      const { isAdmin } = await login(email, password);
+      if (isAdmin) {
+        router.push('/admin');
+      } else {
+        // If a non-admin user logs in through this form,
+        // log them out and show an error.
+        await logout();
+        toast({
+          title: 'Authentication Failed',
+          description: 'You do not have administrative privileges.',
+          variant: 'destructive',
+        });
+      }
     } catch (error: any) {
       toast({
         title: 'Login Failed',
