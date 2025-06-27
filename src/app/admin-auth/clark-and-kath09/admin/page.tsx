@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProducts } from '@/hooks/use-products';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,6 +54,7 @@ export default function AdminPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   
   // State for new product form
   const [newProductName, setNewProductName] = useState('');
@@ -281,7 +292,7 @@ export default function AdminPage() {
   const handleRemoveProduct = async (id: string) => {
     try {
       await removeProduct(id);
-      toast({ title: 'Product Removed', description: 'The product has been removed.', variant: 'destructive' });
+      toast({ title: 'Product Deleted', description: 'The product has been successfully deleted.' });
     } catch (error) {
        console.error("Failed to remove product:", error);
        toast({ title: 'Error', description: 'Could not remove product. Please try again.', variant: 'destructive' });
@@ -559,6 +570,30 @@ export default function AdminPage() {
             </Button>
         </div>
       </div>
+
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{productToDelete?.name}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={async () => {
+                if (productToDelete) {
+                  await handleRemoveProduct(productToDelete.id);
+                }
+              }}
+            >
+              Yes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <Card>
         <CardHeader className="p-4">
@@ -636,8 +671,8 @@ export default function AdminPage() {
                         <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(product)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveProduct(product.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                        <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => setProductToDelete(product)}>
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
