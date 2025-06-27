@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useMounted } from '@/hooks/use-mounted';
 
 const navLinks = [
   { href: '/', label: 'Women' },
@@ -40,6 +41,7 @@ export default function Header() {
   const { user, isAdmin, loading, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
+  const isMounted = useMounted();
 
   const handleLogout = async () => {
     await logout();
@@ -184,66 +186,75 @@ export default function Header() {
         )}>
           <AuthNav />
           
-          {!isAdmin && (
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <ShoppingBag className="h-5 w-5" />
-                  {cartCount > 0 && (
-                    <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                      {cartCount}
-                    </span>
-                  )}
-                  <span className="sr-only">Open cart</span>
-                </Button>
-              </SheetTrigger>
-              <Cart />
-            </Sheet>
-          )}
-
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
-              <div className="flex justify-between items-center border-b pb-4">
-                <Link
-                  href={isAdmin ? "/admin-auth/clark-and-kath09/admin" : "/"}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-2xl font-bold font-headline"
-                >
-                  C&K Collections
-                </Link>
-                <SheetClose asChild>
-                  <Button variant="ghost" size="icon">
-                    <X className="h-6 w-6" />
-                  </Button>
-                </SheetClose>
-              </div>
-              
+          {isMounted ? (
+            <>
               {!isAdmin && (
-                <nav className="flex flex-col space-y-4 mt-6">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      className="text-lg transition-colors hover:text-primary"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative">
+                      <ShoppingBag className="h-5 w-5" />
+                      {cartCount > 0 && (
+                        <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                          {cartCount}
+                        </span>
+                      )}
+                      <span className="sr-only">Open cart</span>
+                    </Button>
+                  </SheetTrigger>
+                  <Cart />
+                </Sheet>
               )}
 
-              <div className="mt-auto">
-                 <MobileAuthNav />
-              </div>
-            </SheetContent>
-          </Sheet>
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="flex flex-col">
+                  <div className="flex justify-between items-center border-b pb-4">
+                    <Link
+                      href={isAdmin ? "/admin-auth/clark-and-kath09/admin" : "/"}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-2xl font-bold font-headline"
+                    >
+                      C&K Collections
+                    </Link>
+                    <SheetClose asChild>
+                      <Button variant="ghost" size="icon">
+                        <X className="h-6 w-6" />
+                      </Button>
+                    </SheetClose>
+                  </div>
+                  
+                  {!isAdmin && (
+                    <nav className="flex flex-col space-y-4 mt-6">
+                      {navLinks.map((link) => (
+                        <Link
+                          key={link.label}
+                          href={link.href}
+                          className="text-lg transition-colors hover:text-primary"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </nav>
+                  )}
+
+                  <div className="mt-auto">
+                     <MobileAuthNav />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </>
+          ) : (
+             <div className="flex items-center space-x-2">
+                {!isAdmin && <Skeleton className="h-10 w-10" />}
+                <Skeleton className="h-10 w-10 md:hidden" />
+             </div>
+          )}
         </div>
       </div>
     </header>
