@@ -93,35 +93,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
+      // Step 1: Authentication
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDocSnap = await getDoc(userDocRef);
 
-      if (!userDocSnap.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          displayName: user.displayName,
-          email: user.email,
-          role: 'user',
-          createdAt: new Date(),
-        });
+      // Step 2: Firestore operation
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (!userDocSnap.exists()) {
+          await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid,
+            displayName: user.displayName,
+            email: user.email,
+            role: 'user',
+            createdAt: new Date(),
+          });
+          toast({
+            title: 'Account Created',
+            description: 'Welcome to C&K Collections!',
+          });
+        } else {
+           toast({
+            title: 'Login Successful',
+            description: "Welcome back!",
+          });
+        }
+      } catch (firestoreError: any) {
+        // This will catch errors from getDoc or setDoc
+        console.error("Firestore operation failed after Google sign-in:", firestoreError);
         toast({
-          title: 'Account Created',
-          description: 'Welcome to C&K Collections!',
-        });
-      } else {
-         toast({
-          title: 'Login Successful',
-          description: "Welcome back!",
+          title: 'Login Succeeded, But Profile Sync Failed',
+          description: `Your user profile could not be saved to the database. Error: ${firestoreError.message}`,
+          variant: 'destructive',
         });
       }
-    } catch (error: any) {
-      if (error.code !== 'auth/popup-closed-by-user') {
+
+    } catch (authError: any) {
+      // This will catch errors from signInWithPopup, like the user closing the window
+      if (authError.code !== 'auth/popup-closed-by-user') {
+        console.error("Google sign-in failed:", authError);
         toast({
           title: 'Sign-in Failed',
-          description: error.message || 'An unexpected error occurred.',
+          description: authError.message || 'An unexpected error occurred.',
           variant: 'destructive',
         });
       }
