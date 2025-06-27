@@ -5,6 +5,7 @@ import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, setDoc } fro
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import type { Product } from '@/lib/types';
 import { db, storage } from '@/lib/firebase';
+import { useToast } from './use-toast';
 
 interface ProductsContextType {
   products: Product[];
@@ -19,6 +20,7 @@ const ProductsContext = createContext<ProductsContextType | undefined>(undefined
 export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     // This check ensures Firebase is initialized on the client.
@@ -66,45 +68,69 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
 
 
   const addProduct = async (productData: Omit<Product, 'id' | 'images'>, imageFile: File | null) => {
-    const tempProductRef = doc(collection(db, 'products'));
-    const productId = tempProductRef.id;
+    const newDocRef = doc(collection(db, 'products'));
+    const productId = newDocRef.id;
 
-    let imageUrl = 'https://placehold.co/600x800';
-    if (imageFile) {
-      imageUrl = await uploadImage(imageFile, productId);
-    }
-    
-    const newProductWithImage = {
-        ...productData,
-        images: [imageUrl],
+    const newProductWithPlaceholder = {
+      ...productData,
+      images: ['https://placehold.co/600x800'],
     };
 
-    await setDoc(tempProductRef, newProductWithImage);
+    await setDoc(newDocRef, newProductWithPlaceholder);
+
+    if (imageFile) {
+      uploadImage(imageFile, productId)
+        .then(async (imageUrl) => {
+          await updateDoc(newDocRef, { images: [imageUrl] });
+        })
+        .catch((error) => {
+          console.error("Background image upload failed:", error);
+          toast({
+            title: 'Image Upload Failed',
+            description: `The image for ${productData.name} could not be uploaded. You can try updating it again from the edit menu.`,
+            variant: 'destructive',
+          });
+        });
+    }
   };
   
   const updateProduct = async (productId: string, productData: Partial<Omit<Product, 'id' | 'images'>>, imageFile: File | null) => {
     const productRef = doc(db, 'products', productId);
     const productUpdateData: Partial<Product> = { ...productData };
 
+    await updateDoc(productRef, productUpdateData);
+
     if (imageFile) {
       const currentProduct = products.find(p => p.id === productId);
-      if (currentProduct && currentProduct.images[0]) {
-        await deleteImage(currentProduct.images[0]);
-      }
       
-      const newImageUrl = await uploadImage(imageFile, productId);
-      productUpdateData.images = [newImageUrl];
+      uploadImage(imageFile, productId)
+        .then(async (newImageUrl) => {
+          await updateDoc(productRef, { images: [newImageUrl] });
+          if (currentProduct?.images[0]) {
+             await deleteImage(currentProduct.images[0]);
+          }
+        })
+        .catch((error) => {
+           console.error("Background image update failed:", error);
+           toast({
+            title: 'Image Update Failed',
+            description: `The new image for ${productData.name} could not be uploaded. Please try again.`,
+            variant: 'destructive',
+          });
+        });
     }
-
-    await updateDoc(productRef, productUpdateData);
   };
 
   const removeProduct = async (productId: string) => {
     const productToDelete = products.find(p => p.id === productId);
-    if (productToDelete && productToDelete.images.length > 0 && productToDelete.images[0]) {
-      await deleteImage(productToDelete.images[0]);
-    }
+    
     await deleteDoc(doc(db, 'products', productId));
+
+    if (productToDelete && productToDelete.images.length > 0 && productToDelete.images[0]) {
+      deleteImage(productToDelete.images[0]).catch(error => {
+        console.error("Background image deletion failed:", error);
+      });
+    }
   };
 
 
