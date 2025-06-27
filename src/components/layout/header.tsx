@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBag, Menu, X, LogOut, User as UserIcon, LogIn, UserPlus, Skeleton } from 'lucide-react';
+import { ShoppingBag, Menu, X, LogOut, User as UserIcon, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { Cart } from '@/components/cart';
@@ -24,6 +24,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const navLinks = [
   { href: '/', label: 'Women' },
