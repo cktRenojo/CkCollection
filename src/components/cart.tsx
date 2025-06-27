@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -5,12 +6,38 @@ import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { Separator } from './ui/separator';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export function Cart() {
   const { cartItems, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleCheckout = () => {
+    if (authLoading) return;
+
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to proceed to checkout.',
+        variant: 'destructive',
+      });
+      // Close the sheet before redirecting
+      const closeButton = document.querySelector('[data-radix-dialog-close]');
+      if (closeButton instanceof HTMLElement) {
+          closeButton.click();
+      }
+      router.push('/auth/login?redirect=/checkout');
+    } else {
+      router.push('/checkout');
+    }
+  };
 
   return (
     <SheetContent className="flex w-full flex-col pr-0 sm:max-w-lg">
@@ -84,9 +111,11 @@ export function Cart() {
             <p className="text-sm text-muted-foreground">
               Shipping and taxes calculated at checkout.
             </p>
-            <Button size="lg" className="w-full">
-              Proceed to Checkout
-            </Button>
+            <SheetClose asChild>
+                <Button size="lg" className="w-full" onClick={handleCheckout} disabled={authLoading}>
+                    Proceed to Checkout
+                </Button>
+            </SheetClose>
           </div>
         </SheetFooter>
       )}

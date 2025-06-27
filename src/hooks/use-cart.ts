@@ -1,7 +1,9 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { CartItem, Product, ProductSize } from '@/lib/types';
+import { useToast } from './use-toast';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -17,13 +19,19 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { toast } = useToast();
   
   useEffect(() => {
     // This check is to prevent "localStorage is not defined" error during server-side rendering
     if (typeof window !== 'undefined') {
-      const storedCart = localStorage.getItem('cart');
-      if (storedCart) {
-        setCartItems(JSON.parse(storedCart));
+      try {
+        const storedCart = localStorage.getItem('cart');
+        if (storedCart) {
+          setCartItems(JSON.parse(storedCart));
+        }
+      } catch (error) {
+        console.error("Failed to parse cart from localStorage", error);
+        setCartItems([]);
       }
     }
   }, []);
@@ -47,6 +55,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         );
       }
       return [...prevItems, { product, size, quantity: 1 }];
+    });
+     toast({
+      title: 'Added to cart',
+      description: `${product.name} (${size}) has been added to your cart.`,
     });
   };
 
