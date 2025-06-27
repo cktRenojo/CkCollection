@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
     try {
       const { isAdmin } = await login(email, password);
       if (isAdmin) {
-        router.push('/admin');
+        router.push('/admin-auth/clark-and-kath09/admin');
       } else {
         toast({
           title: 'Authentication Failed',
