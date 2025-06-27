@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -56,39 +56,31 @@ export default function AdminPage() {
   
   const { toast } = useToast();
 
-  // --- NEW, ROBUST AUTHENTICATION CHECK ---
-  // This logic is now sequential and eliminates the previous race condition.
-  
-  // 1. Wait for the authentication state to be determined.
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  useEffect(() => {
+    // While authentication is in progress, do nothing. The loading spinner will be displayed.
+    if (authLoading) {
+      return;
+    }
 
-  // 2. If loading is finished and there's no user, redirect to the admin login page.
-  if (!user) {
-    router.replace('/admin-auth/login');
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // 3. If the user is logged in but is NOT an admin, redirect them to the user homepage.
-  if (!isAdmin) {
-    router.replace('/');
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+    // After loading, redirect if the user is not a logged-in admin.
+    if (!user) {
+      router.replace('/admin-auth/login');
+    } else if (!isAdmin) {
+      router.replace('/');
+    }
+  }, [authLoading, user, isAdmin, router]);
   
-  // 4. If all checks pass, render the admin dashboard.
+  // Display a loading spinner until the authentication check is complete
+  // and we've confirmed the user is an authorized admin. This prevents
+  // the admin dashboard from flashing on screen for non-admin users
+  // before the redirect happens.
+  if (authLoading || !user || !isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
   
   const handleLogout = async () => {
     await logout();
