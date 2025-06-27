@@ -8,7 +8,8 @@ import {
   User, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  signOut
+  signOut,
+  updateProfile
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -17,7 +18,8 @@ interface AuthContextType {
   user: User | null;
   isAdmin: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ user: User, isAdmin: boolean }>;
+  login: (email: string, password:string) => Promise<{ user: User, isAdmin: boolean }>;
+  signupUser: (fullName: string, email: string, password: string) => Promise<User>;
   signupAdmin: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
 }
@@ -55,20 +57,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const adminSnap = await getDoc(adminRef);
     const isAdmin = adminSnap.exists();
     
-    // We update the state here as well to ensure UI consistency, 
-    // though onAuthStateChanged will also fire.
     setUser(user);
     setIsAdmin(isAdmin);
 
     return { user, isAdmin };
   };
+  
+  const signupUser = async (fullName: string, email: string, password: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    await updateProfile(user, { displayName: fullName });
+    
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      displayName: fullName,
+      email: user.email,
+      role: 'user',
+      createdAt: new Date(),
+    });
+
+    setUser(user);
+    setIsAdmin(false);
+    return user;
+  };
 
   const signupAdmin = async (email: string, password: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    // Add user to the 'admins' collection to assign the admin role
     await setDoc(doc(db, 'admins', user.uid), { role: 'admin', createdAt: new Date() });
-    // After creating the admin user, sign them out so they are forced to log in.
     await signOut(auth);
     return userCredential;
   };
@@ -84,6 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAdmin,
     loading,
     login,
+    signupUser,
     signupAdmin,
     logout,
   };

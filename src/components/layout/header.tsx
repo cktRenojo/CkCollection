@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, LogOut, User as UserIcon, LogIn, UserPlus, Skeleton } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { Cart } from '@/components/cart';
@@ -12,7 +12,18 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
   { href: '/', label: 'Women' },
@@ -24,7 +35,123 @@ const navLinks = [
 
 export default function Header() {
   const { cartCount } = useCart();
+  const { user, isAdmin, loading, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
+  
+  const getInitials = (name?: string | null) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const AuthNav = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-20 rounded-md" />
+            <Skeleton className="h-10 w-10 rounded-full" />
+        </div>
+      );
+    }
+
+    if (user) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
+                <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {isAdmin && (
+              <DropdownMenuItem onClick={() => router.push('/admin-auth/clark-and-kath09/admin')}>
+                <UserIcon className="mr-2 h-4 w-4" />
+                <span>Admin Dashboard</span>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    return (
+      <div className="hidden md:flex items-center gap-2">
+        <Button asChild variant="ghost">
+            <Link href="/auth/login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+            </Link>
+        </Button>
+        <Button asChild>
+            <Link href="/auth/signup">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Sign Up
+            </Link>
+        </Button>
+      </div>
+    );
+  };
+  
+  const MobileAuthNav = () => {
+     if (user) {
+        return (
+            <div className="border-t pt-4 mt-4">
+                 <div className="flex items-center gap-3 px-2 mb-4">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
+                        <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                        </p>
+                    </div>
+                </div>
+                 {isAdmin && (
+                  <Link href="/admin-auth/clark-and-kath09/admin" className="flex items-center w-full text-left p-2 text-lg" onClick={() => setIsMobileMenuOpen(false)}>
+                    <UserIcon className="mr-2 h-5 w-5" /> Admin
+                  </Link>
+                )}
+                <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="flex items-center w-full text-left p-2 text-lg text-destructive">
+                    <LogOut className="mr-2 h-5 w-5" /> Logout
+                </button>
+            </div>
+        );
+     }
+
+     return (
+        <div className="mt-6 flex flex-col gap-2 border-t pt-6">
+            <Button asChild variant="default" size="lg" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link href="/auth/signup">Sign Up</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link href="/auth/login">Login</Link>
+            </Button>
+        </div>
+     );
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
@@ -44,6 +171,7 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex items-center space-x-2">
+          <AuthNav />
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -66,34 +194,35 @@ export default function Header() {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-              <div className="flex flex-col h-full">
-                <div className="flex justify-between items-center border-b pb-4">
+            <SheetContent side="left" className="flex flex-col">
+              <div className="flex justify-between items-center border-b pb-4">
+                <Link
+                  href="/"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-2xl font-bold font-headline"
+                >
+                  C&K Collections
+                </Link>
+                <SheetClose asChild>
+                  <Button variant="ghost" size="icon">
+                    <X className="h-6 w-6" />
+                  </Button>
+                </SheetClose>
+              </div>
+              <nav className="flex flex-col space-y-4 mt-6">
+                {navLinks.map((link) => (
                   <Link
-                    href="/"
+                    key={link.label}
+                    href={link.href}
+                    className="text-lg transition-colors hover:text-primary"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-2xl font-bold font-headline"
                   >
-                    C&K Collections
+                    {link.label}
                   </Link>
-                  <SheetClose asChild>
-                    <Button variant="ghost" size="icon">
-                      <X className="h-6 w-6" />
-                    </Button>
-                  </SheetClose>
-                </div>
-                <nav className="flex flex-col space-y-4 mt-6">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      className="text-lg transition-colors hover:text-primary"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
+                ))}
+              </nav>
+              <div className="mt-auto">
+                 <MobileAuthNav />
               </div>
             </SheetContent>
           </Sheet>
