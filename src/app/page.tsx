@@ -11,7 +11,6 @@ import { differenceInDays } from 'date-fns';
 
 const getEffectiveCategory = (product: Product): ProductCategory => {
     if (product.category === 'New Arrivals' && product.createdAt && product.genderCategory) {
-        // Firestore timestamp can be an object, so we need to convert it to a Date
         const createdAtDate = product.createdAt.toDate ? product.createdAt.toDate() : new Date(product.createdAt);
         if (differenceInDays(new Date(), createdAtDate) > 30) {
             return product.genderCategory;
@@ -19,6 +18,30 @@ const getEffectiveCategory = (product: Product): ProductCategory => {
     }
     return product.category;
 };
+
+const getProductDisplayCategories = (product: Product): string[] => {
+    const categories: Set<string> = new Set();
+    const effectiveCategory = getEffectiveCategory(product);
+    categories.add(effectiveCategory);
+
+    // Unisex items should appear in Men and Women sections
+    if (effectiveCategory === 'Unisex') {
+        categories.add('Men');
+        categories.add('Women');
+    }
+    
+    // An active New Arrival should also appear in its gender category filter
+    if (product.category === 'New Arrivals' && effectiveCategory === 'New Arrivals' && product.genderCategory) {
+        categories.add(product.genderCategory);
+        if (product.genderCategory === 'Unisex') {
+            categories.add('Men');
+            categories.add('Women');
+        }
+    }
+
+    return Array.from(categories);
+}
+
 
 export default function Home() {
   const { products: allProducts, loading } = useProducts();
@@ -29,8 +52,14 @@ export default function Home() {
 
   const filteredProducts = useMemo(() => {
     return allProducts.filter((product) => {
-      const effectiveCategory = getEffectiveCategory(product);
-      const categoryMatch = filters.category === 'All' || effectiveCategory === filters.category;
+      let categoryMatch = false;
+      if (filters.category === 'All') {
+        categoryMatch = true;
+      } else {
+        const displayCategories = getProductDisplayCategories(product);
+        categoryMatch = displayCategories.includes(filters.category);
+      }
+      
       const subCategoryMatch = filters.subCategory === 'All' || product.subCategory === filters.subCategory;
       return categoryMatch && subCategoryMatch;
     });
