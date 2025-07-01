@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingBag, Menu, X, LogOut, User as UserIcon, LogIn, UserPlus } from 'lucide-react';
+import { ShoppingBag, Menu, X, LogOut, User as UserIcon, LogIn, UserPlus, MessageCircle } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { Cart } from '@/components/cart';
@@ -96,10 +96,16 @@ export default function Header() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {isAdmin && (
-              <DropdownMenuItem onClick={() => router.push('/admin-auth/clark-and-kath09/admin')}>
-                <UserIcon className="mr-2 h-4 w-4" />
-                <span>Admin Dashboard</span>
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem onClick={() => router.push('/admin-auth/clark-and-kath09/admin')}>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span>Admin Dashboard</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/admin-auth/clark-and-kath09/chat')}>
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  <span>Messages</span>
+                </DropdownMenuItem>
+              </>
             )}
             <DropdownMenuItem
               onSelect={(e) => e.preventDefault()}
@@ -149,9 +155,14 @@ export default function Header() {
                     </div>
                 </div>
                  {isAdmin && (
-                  <Link href="/admin-auth/clark-and-kath09/admin" className="flex items-center w-full text-left p-2 text-lg" onClick={() => setIsMobileMenuOpen(false)}>
-                    <UserIcon className="mr-2 h-5 w-5" /> Admin
-                  </Link>
+                  <>
+                    <Link href="/admin-auth/clark-and-kath09/admin" className="flex items-center w-full text-left p-2 text-lg" onClick={() => setIsMobileMenuOpen(false)}>
+                      <UserIcon className="mr-2 h-5 w-5" /> Admin
+                    </Link>
+                    <Link href="/admin-auth/clark-and-kath09/chat" className="flex items-center w-full text-left p-2 text-lg" onClick={() => setIsMobileMenuOpen(false)}>
+                      <MessageCircle className="mr-2 h-5 w-5" /> Messages
+                    </Link>
+                  </>
                 )}
                 <button onClick={() => setIsLogoutConfirmOpen(true)} className="flex items-center w-full text-left p-2 text-lg text-destructive">
                     <LogOut className="mr-2 h-5 w-5" /> Logout

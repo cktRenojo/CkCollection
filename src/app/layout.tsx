@@ -8,6 +8,7 @@ import Footer from '@/components/layout/footer';
 import { cn } from '@/lib/utils';
 import { ProductsProvider } from '@/hooks/use-products';
 import { AuthProvider } from '@/hooks/use-auth';
+import { UserChatWidget } from '@/components/user-chat-widget';
 
 export const metadata: Metadata = {
   title: 'C&K Collections - Modern Fashion',
@@ -28,6 +29,7 @@ export default function RootLayout({
               <Header />
               <main className="flex-grow">{children}</main>
               <Footer />
+              <UserChatWidget />
             </CartProvider>
           </ProductsProvider>
         </AuthProvider>

@@ -23,3 +23,18 @@ export type CartItem = {
   size: ProductSize;
   quantity: number;
 };
+
+export type ChatMessage = {
+  id: string;
+  text: string;
+  senderId: string;
+  timestamp: any; // Firestore Timestamp
+  senderName?: string;
+};
+
+export type Conversation = {
+  id: string; // This will be the userId
+  userName: string;
+  userEmail: string;
+  lastMessage: ChatMessage | null;
+};
