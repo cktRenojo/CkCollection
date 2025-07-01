@@ -1,11 +1,24 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { Product } from '@/lib/types';
+import type { Product, ProductCategory } from '@/lib/types';
 import ProductCard from '@/components/product-card';
 import { ProductFilters } from '@/components/product-filters';
 import { useProducts } from '@/hooks/use-products';
 import { Skeleton } from '@/components/ui/skeleton';
+import { differenceInDays } from 'date-fns';
+
+const getEffectiveCategory = (product: Product): ProductCategory => {
+    if (product.category === 'New Arrivals' && product.createdAt && product.genderCategory) {
+        // Firestore timestamp can be an object, so we need to convert it to a Date
+        const createdAtDate = product.createdAt.toDate ? product.createdAt.toDate() : new Date(product.createdAt);
+        if (differenceInDays(new Date(), createdAtDate) > 30) {
+            return product.genderCategory;
+        }
+    }
+    return product.category;
+};
 
 export default function Home() {
   const { products: allProducts, loading } = useProducts();
@@ -16,7 +29,8 @@ export default function Home() {
 
   const filteredProducts = useMemo(() => {
     return allProducts.filter((product) => {
-      const categoryMatch = filters.category === 'All' || product.category === filters.category;
+      const effectiveCategory = getEffectiveCategory(product);
+      const categoryMatch = filters.category === 'All' || effectiveCategory === filters.category;
       const subCategoryMatch = filters.subCategory === 'All' || product.subCategory === filters.subCategory;
       return categoryMatch && subCategoryMatch;
     });

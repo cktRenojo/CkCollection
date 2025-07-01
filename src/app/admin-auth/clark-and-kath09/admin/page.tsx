@@ -41,6 +41,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 
 const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Unisex'];
+const allGenderCategories: ('Women' | 'Men' | 'Unisex')[] = ['Women', 'Men', 'Unisex'];
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt', 'Shorts', 'Shoes'];
 const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
 
@@ -70,6 +71,7 @@ export default function AdminPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [newProductSizes, setNewProductSizes] = useState<ProductSize[]>([]);
   const [newProductCategory, setNewProductCategory] = useState<ProductCategory | ''>('');
+  const [newProductGenderCategory, setNewProductGenderCategory] = useState<('Women' | 'Men' | 'Unisex') | ''>('');
   const [newProductSubCategory, setNewProductSubCategory] = useState<ProductSubCategory | ''>('');
   const [newProductWidth, setNewProductWidth] = useState('');
   const [newProductLength, setNewProductLength] = useState('');
@@ -85,6 +87,7 @@ export default function AdminPage() {
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
   const [editProductSizes, setEditProductSizes] = useState<ProductSize[]>([]);
   const [editProductCategory, setEditProductCategory] = useState<ProductCategory | ''>('');
+  const [editProductGenderCategory, setEditProductGenderCategory] = useState<('Women' | 'Men' | 'Unisex') | ''>('');
   const [editProductSubCategory, setEditProductSubCategory] = useState<ProductSubCategory | ''>('');
   const [editProductWidth, setEditProductWidth] = useState('');
   const [editProductLength, setEditProductLength] = useState('');
@@ -146,6 +149,7 @@ export default function AdminPage() {
     setImagePreview(null);
     setNewProductSizes([]);
     setNewProductCategory('');
+    setNewProductGenderCategory('');
     setNewProductSubCategory('');
     setNewProductWidth('');
     setNewProductLength('');
@@ -203,6 +207,10 @@ export default function AdminPage() {
         toast({ title: 'All fields required', description: 'Please fill out all product details.', variant: 'destructive' });
         return;
     }
+    if (newProductCategory === 'New Arrivals' && !newProductGenderCategory) {
+        toast({ title: 'Gender Category Required', description: 'Please select a gender category for New Arrivals.', variant: 'destructive' });
+        return;
+    }
     const priceValue = parseFloat(newProductPrice);
     if (isNaN(priceValue) || priceValue <= 0) {
         toast({ title: 'Invalid Price', description: 'Please enter a valid positive number for the price.', variant: 'destructive' });
@@ -226,7 +234,7 @@ export default function AdminPage() {
     
     setIsSubmitting(true);
     
-    const productData: Omit<Product, 'id' | 'images'> = {
+    const productData: Omit<Product, 'id' | 'images' | 'createdAt'> = {
       name: newProductName,
       price: priceValue,
       description: newProductDescription,
@@ -238,6 +246,7 @@ export default function AdminPage() {
       ...(newProductWidth && { width: parseFloat(newProductWidth) }),
       ...(newProductLength && { length: parseFloat(newProductLength) }),
       ...(newProductWaistSize && { waistSize: parseFloat(newProductWaistSize) }),
+      ...(newProductCategory === 'New Arrivals' && { genderCategory: newProductGenderCategory as 'Men' | 'Women' | 'Unisex' }),
     };
 
     try {
@@ -261,6 +270,7 @@ export default function AdminPage() {
     setEditImagePreview(product.images[0] || null);
     setEditProductSizes(product.sizes);
     setEditProductCategory(product.category);
+    setEditProductGenderCategory(product.genderCategory || '');
     setEditProductSubCategory(product.subCategory);
     setEditProductWidth(product.width?.toString() ?? '');
     setEditProductLength(product.length?.toString() ?? '');
@@ -276,6 +286,10 @@ export default function AdminPage() {
         toast({ title: 'All fields required', description: 'Please fill out all product details.', variant: 'destructive' });
         return;
     }
+    if (editProductCategory === 'New Arrivals' && !editProductGenderCategory) {
+        toast({ title: 'Gender Category Required', description: 'Please select a gender category for New Arrivals.', variant: 'destructive' });
+        return;
+    }
     const priceValue = parseFloat(editProductPrice);
     if (isNaN(priceValue) || priceValue <= 0) {
         toast({ title: 'Invalid Price', description: 'Please enter a valid positive number for the price.', variant: 'destructive' });
@@ -289,7 +303,7 @@ export default function AdminPage() {
 
     setIsUpdating(true);
 
-    const productData: Partial<Omit<Product, 'id' | 'images'>> = {
+    const productData: Partial<Omit<Product, 'id' | 'images' | 'createdAt'>> = {
       name: editProductName,
       price: priceValue,
       description: editProductDescription,
@@ -297,6 +311,7 @@ export default function AdminPage() {
       subCategory: editProductSubCategory as ProductSubCategory,
       sizes: editProductSizes,
       quantity: quantityValue,
+      genderCategory: editProductCategory === 'New Arrivals' ? (editProductGenderCategory as 'Men' | 'Women' | 'Unisex') : undefined,
     };
 
     if (upperWearSubCategories.includes(editProductSubCategory as ProductSubCategory)) {
@@ -413,7 +428,16 @@ export default function AdminPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="category">Category</Label>
-                            <Select name="category" value={newProductCategory} onValueChange={(value) => setNewProductCategory(value as ProductCategory)}>
+                            <Select 
+                              name="category" 
+                              value={newProductCategory} 
+                              onValueChange={(value) => {
+                                setNewProductCategory(value as ProductCategory);
+                                if (value !== 'New Arrivals') {
+                                  setNewProductGenderCategory('');
+                                }
+                              }}
+                            >
                             <SelectTrigger id="category">
                                 <SelectValue placeholder="Select category" />
                             </SelectTrigger>
@@ -434,6 +458,20 @@ export default function AdminPage() {
                             </Select>
                         </div>
                     </div>
+
+                    {newProductCategory === 'New Arrivals' && (
+                       <div className="space-y-2">
+                          <Label htmlFor="genderCategory">Gender Category</Label>
+                          <Select name="genderCategory" value={newProductGenderCategory} onValueChange={(value) => setNewProductGenderCategory(value as 'Men' | 'Women' | 'Unisex')}>
+                          <SelectTrigger id="genderCategory">
+                              <SelectValue placeholder="Select gender category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              {allGenderCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                          </SelectContent>
+                          </Select>
+                      </div>
+                    )}
 
                     {upperWearSubCategories.includes(newProductSubCategory as ProductSubCategory) && (
                         <div className="grid grid-cols-2 gap-4">
@@ -562,7 +600,15 @@ export default function AdminPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="edit-category">Category</Label>
-                            <Select value={editProductCategory} onValueChange={(value) => setEditProductCategory(value as ProductCategory)}>
+                            <Select 
+                              value={editProductCategory} 
+                              onValueChange={(value) => {
+                                setEditProductCategory(value as ProductCategory)
+                                if (value !== 'New Arrivals') {
+                                  setEditProductGenderCategory('');
+                                }
+                              }}
+                            >
                             <SelectTrigger id="edit-category">
                                 <SelectValue placeholder="Select category" />
                             </SelectTrigger>
@@ -583,6 +629,20 @@ export default function AdminPage() {
                             </Select>
                         </div>
                     </div>
+
+                    {editProductCategory === 'New Arrivals' && (
+                       <div className="space-y-2">
+                          <Label htmlFor="edit-genderCategory">Gender Category</Label>
+                          <Select name="genderCategory" value={editProductGenderCategory} onValueChange={(value) => setEditProductGenderCategory(value as 'Men' | 'Women' | 'Unisex')}>
+                          <SelectTrigger id="edit-genderCategory">
+                              <SelectValue placeholder="Select gender category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              {allGenderCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                          </SelectContent>
+                          </Select>
+                      </div>
+                    )}
                     
                     {upperWearSubCategories.includes(editProductSubCategory as ProductSubCategory) && (
                         <div className="grid grid-cols-2 gap-4">
