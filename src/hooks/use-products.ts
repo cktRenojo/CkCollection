@@ -2,9 +2,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { useToast } from './use-toast';
 
 interface ProductsContextType {
@@ -24,9 +25,7 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
     const productsCollectionRef = collection(db, 'products');
-
     const unsubscribe = onSnapshot(productsCollectionRef, (snapshot) => {
       const productsData = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -38,75 +37,67 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error fetching products from Firestore:", error);
         setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  const fileToDataUri = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          resolve(reader.result);
-        } else {
-          reject(new Error('FileReader did not return a string.'));
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  const uploadImage = async (productId: string, file: File): Promise<string> => {
+    const imageRef = ref(storage, `products/${productId}/${file.name}`);
+    await uploadBytes(imageRef, file);
+    return getDownloadURL(imageRef);
   };
 
   const addProduct = async (productData: Omit<Product, 'id' | 'images'>, imageFile: File | null) => {
+    const newProductRef = doc(collection(db, 'products'));
+    const productId = newProductRef.id;
+
     let imageUrl = 'https://placehold.co/600x800';
     if (imageFile) {
         try {
-            imageUrl = await fileToDataUri(imageFile);
+            imageUrl = await uploadImage(productId, imageFile);
         } catch (error) {
-            console.error("Could not convert file to data URI", error);
+            console.error("Image upload failed:", error);
             toast({
-                title: 'Image Processing Failed',
-                description: 'The selected image could not be processed. Please try another image.',
+                title: 'Image Upload Failed',
+                description: 'Could not upload image. Please try again.',
                 variant: 'destructive',
             });
-            return; // Stop if image fails
+            return;
         }
     }
 
     const newProductDocument = {
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      category: productData.category,
-      subCategory: productData.subCategory,
-      sizes: productData.sizes,
-      quantity: productData.quantity,
-      dataAiHint: productData.dataAiHint || 'fashion apparel',
+      id: productId,
+      ...productData,
       images: [imageUrl],
     };
 
-    await addDoc(collection(db, 'products'), newProductDocument);
+    await setDoc(newProductRef, newProductDocument);
   };
   
   const updateProduct = async (productId: string, productData: Partial<Omit<Product, 'id' | 'images'>>, imageFile: File | null) => {
     const productRef = doc(db, 'products', productId);
-    const productUpdateData: { [key: string]: any } = {};
-
-    Object.keys(productData).forEach(key => {
-        const typedKey = key as keyof typeof productData;
-        if (productData[typedKey] !== undefined) {
-            productUpdateData[key] = productData[typedKey];
-        }
-    });
+    const productUpdateData: { [key: string]: any } = { ...productData };
 
     if (imageFile) {
         try {
-            productUpdateData.images = [await fileToDataUri(imageFile)];
+            const oldProductSnap = await getDoc(productRef);
+            if (oldProductSnap.exists()) {
+                const oldProduct = oldProductSnap.data() as Product;
+                if (oldProduct.images && oldProduct.images[0] && oldProduct.images[0].includes('firebasestorage.googleapis.com')) {
+                    const oldImageRef = ref(storage, oldProduct.images[0]);
+                    await deleteObject(oldImageRef).catch(err => {
+                        if (err.code !== 'storage/object-not-found') console.error("Could not delete old image", err);
+                    });
+                }
+            }
+
+            const newImageUrl = await uploadImage(productId, imageFile);
+            productUpdateData.images = [newImageUrl];
         } catch (error) {
-            console.error("Could not convert file to data URI", error);
+            console.error("Image upload failed:", error);
             toast({
-                title: 'Image Processing Failed',
-                description: 'The new image could not be processed. Please try another image.',
+                title: 'Image Upload Failed',
+                description: 'Could not update image. Please try again.',
                 variant: 'destructive',
             });
             return;
@@ -117,9 +108,33 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const removeProduct = async (productId: string) => {
-    await deleteDoc(doc(db, 'products', productId));
+    const productRef = doc(db, 'products', productId);
+    try {
+        const productSnap = await getDoc(productRef);
+        if (productSnap.exists()) {
+            const product = productSnap.data() as Product;
+            if (product.images && product.images[0] && product.images[0].includes('firebasestorage.googleapis.com')) {
+                try {
+                    const imageRef = ref(storage, product.images[0]);
+                    await deleteObject(imageRef);
+                } catch (err: any) {
+                    if (err.code !== 'storage/object-not-found') {
+                        console.error("Failed to delete product image:", err);
+                    }
+                }
+            }
+        }
+        await deleteDoc(productRef);
+    } catch (error) {
+        console.error("Failed to remove product:", error);
+        toast({
+            title: 'Error',
+            description: 'Could not remove product. Please try again.',
+            variant: 'destructive',
+        });
+        throw error;
+    }
   };
-
 
   const value = {
     products,
