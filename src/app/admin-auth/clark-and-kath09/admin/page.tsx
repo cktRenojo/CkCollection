@@ -213,6 +213,16 @@ export default function AdminPage() {
         toast({ title: 'Invalid Quantity', description: 'Please enter a valid non-negative number for the quantity.', variant: 'destructive' });
         return;
     }
+
+    if (upperWearSubCategories.includes(newProductSubCategory as ProductSubCategory) && (!newProductWidth.trim() || !newProductLength.trim())) {
+        toast({ title: 'Dimensions Required', description: 'Please provide both width and length for this sub-category.', variant: 'destructive' });
+        return;
+    }
+    
+    if (lowerWearSubCategories.includes(newProductSubCategory as ProductSubCategory) && !newProductWaistSize.trim()) {
+        toast({ title: 'Dimensions Required', description: 'Please provide waist size for this sub-category.', variant: 'destructive' });
+        return;
+    }
     
     setIsSubmitting(true);
     

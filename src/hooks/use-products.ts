@@ -67,11 +67,22 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
-    // The user will experience a delay here as the data URI is generated and uploaded.
-    await addDoc(collection(db, 'products'), {
-      ...productData,
-      images: imageUrls,
-    });
+    const finalProductData: Omit<Product, 'id'> = {
+        name: productData.name,
+        price: productData.price,
+        description: productData.description,
+        category: productData.category,
+        subCategory: productData.subCategory,
+        sizes: productData.sizes,
+        quantity: productData.quantity,
+        dataAiHint: productData.dataAiHint || 'fashion apparel',
+        images: imageUrls,
+        ...(productData.width && { width: productData.width }),
+        ...(productData.length && { length: productData.length }),
+        ...(productData.waistSize && { waistSize: productData.waistSize }),
+    };
+
+    await addDoc(collection(db, 'products'), finalProductData);
   };
   
   const updateProduct = async (productId: string, productData: Partial<Omit<Product, 'id' | 'images'>>, imageFile: File | null) => {
