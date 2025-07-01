@@ -39,10 +39,10 @@ import { cn } from '@/lib/utils';
 import { useMounted } from '@/hooks/use-mounted';
 
 const navLinks = [
-  { href: '/', label: 'Women' },
-  { href: '/', label: 'Men' },
-  { href: '/', label: 'New Arrivals' },
-  { href: '/', label: 'Unisex' },
+  { href: '/?category=Women', label: 'Women' },
+  { href: '/?category=Men', label: 'Men' },
+  { href: '/?category=New%20Arrivals', label: 'New Arrivals' },
+  { href: '/?category=Unisex', label: 'Unisex' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -209,11 +209,11 @@ export default function Header() {
       </AlertDialog>
 
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {isAdmin && <div className="flex-1"></div>}
-
-        <Link href={isAdmin ? "/admin-auth/clark-and-kath09/admin" : "/"} className="text-2xl font-bold font-headline">
-          C&K Collections
-        </Link>
+        <div className="flex-1">
+          <Link href={isAdmin ? "/admin-auth/clark-and-kath09/admin" : "/"} className="text-2xl font-bold font-headline">
+            C&K Collections
+          </Link>
+        </div>
 
         {!isAdmin && (
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
@@ -230,8 +230,7 @@ export default function Header() {
         )}
 
         <div className={cn(
-            "flex items-center space-x-2",
-            isAdmin && "flex-1 justify-end"
+            "flex flex-1 items-center justify-end space-x-2"
         )}>
           <AuthNav />
           

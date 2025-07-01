@@ -1,7 +1,7 @@
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { Product, ProductCategory } from '@/lib/types';
 import ProductCard from '@/components/product-card';
 import { ProductFilters } from '@/components/product-filters';
@@ -24,13 +24,11 @@ const getProductDisplayCategories = (product: Product): string[] => {
     const effectiveCategory = getEffectiveCategory(product);
     categories.add(effectiveCategory);
 
-    // Unisex items should appear in Men and Women sections
     if (effectiveCategory === 'Unisex') {
         categories.add('Men');
         categories.add('Women');
     }
     
-    // An active New Arrival should also appear in its gender category filter
     if (product.category === 'New Arrivals' && effectiveCategory === 'New Arrivals' && product.genderCategory) {
         categories.add(product.genderCategory);
         if (product.genderCategory === 'Unisex') {
@@ -42,13 +40,40 @@ const getProductDisplayCategories = (product: Product): string[] => {
     return Array.from(categories);
 }
 
+function ProductGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
+      {Array.from({ length: 9 }).map((_, index) => (
+        <div key={index} className="space-y-4">
+            <Skeleton className="aspect-[3/4] w-full rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-4/5" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-6 w-1/4" />
+            </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-export default function Home() {
+function HomeContent() {
   const { products: allProducts, loading } = useProducts();
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get('category');
+
   const [filters, setFilters] = useState({
-    category: 'All',
+    category: categoryFromUrl || 'All',
     subCategory: 'All',
   });
+
+  useEffect(() => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      category: categoryFromUrl || 'All',
+      subCategory: 'All', // Reset sub-category when main category changes via URL
+    }));
+  }, [categoryFromUrl]);
 
   const filteredProducts = useMemo(() => {
     return allProducts.filter((product) => {
@@ -79,18 +104,7 @@ export default function Home() {
         </aside>
         <main className="lg:col-span-3">
           {loading ? (
-             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
-              {Array.from({ length: 9 }).map((_, index) => (
-                <div key={index} className="space-y-4">
-                    <Skeleton className="aspect-[3/4] w-full rounded-lg" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-6 w-4/5" />
-                      <Skeleton className="h-4 w-1/2" />
-                      <Skeleton className="h-6 w-1/4" />
-                    </div>
-                </div>
-              ))}
-            </div>
+             <ProductGridSkeleton />
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
               {filteredProducts.map((product) => (
@@ -106,5 +120,40 @@ export default function Home() {
         </main>
       </div>
     </div>
+  );
+}
+
+
+function HomePageSkeleton() {
+    return (
+        <div className="container mx-auto px-4 py-8 md:py-12">
+            <div className="text-center mb-12">
+                <Skeleton className="h-12 w-3/4 mx-auto" />
+                <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <aside className="lg:col-span-1 lg:sticky lg:top-24 h-fit">
+                    <Card>
+                        <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-10 w-full" /></div>
+                            <div className="space-y-2"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-10 w-full" /></div>
+                        </CardContent>
+                    </Card>
+                </aside>
+                <main className="lg:col-span-3">
+                    <ProductGridSkeleton />
+                </main>
+            </div>
+        </div>
+    )
+}
+
+
+export default function Home() {
+  return (
+    <Suspense fallback={<HomePageSkeleton />}>
+      <HomeContent />
+    </Suspense>
   );
 }

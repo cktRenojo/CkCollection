@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useProducts } from '@/hooks/use-products';
 import { differenceInDays } from 'date-fns';
 import type { Product, ProductCategory } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 interface ProductFiltersProps {
   filters: {
@@ -54,6 +55,7 @@ const mainFilterCategories = ['All', 'Women', 'Men', 'New Arrivals', 'Unisex'];
 
 export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
   const { products } = useProducts();
+  const router = useRouter();
   
   const subCategories = useMemo(() => {
     if (!products.length) return ['All'];
@@ -75,7 +77,12 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
 
 
   const handleCategoryChange = (value: string) => {
-    setFilters((prev: any) => ({ ...prev, category: value, subCategory: 'All' }));
+    // Also update the URL to keep things consistent
+    if (value === 'All') {
+        router.push('/');
+    } else {
+        router.push(`/?category=${encodeURIComponent(value)}`);
+    }
   };
 
   const handleSubCategoryChange = (value: string) => {
