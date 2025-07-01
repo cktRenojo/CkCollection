@@ -24,6 +24,8 @@ export function AddToCartForm({ product }: { product: Product }) {
     addToCart(product, selectedSize);
   };
 
+  const isOutOfStock = !product.quantity || product.quantity <= 0;
+
   return (
     <div className="space-y-6">
       <div>
@@ -38,12 +40,13 @@ export function AddToCartForm({ product }: { product: Product }) {
         >
           {product.sizes.map((size) => (
             <div key={size}>
-              <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
+              <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" disabled={isOutOfStock} />
               <Label
                 htmlFor={`size-${size}`}
                 className={cn(
                   "flex h-10 w-10 items-center justify-center rounded-md border text-sm font-medium uppercase transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer",
-                  "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
+                  "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground",
+                  "peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:bg-muted"
                 )}
               >
                 {size}
@@ -54,9 +57,9 @@ export function AddToCartForm({ product }: { product: Product }) {
         {error && <p className="mt-2 text-sm font-medium text-destructive">{error}</p>}
       </div>
 
-      <Button size="lg" className="w-full md:w-auto" onClick={handleAddToCart}>
+      <Button size="lg" className="w-full md:w-auto" onClick={handleAddToCart} disabled={isOutOfStock}>
         <ShoppingBag className="mr-2 h-5 w-5" />
-        Add to Cart
+        {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
       </Button>
     </div>
   );

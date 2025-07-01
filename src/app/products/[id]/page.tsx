@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useProducts } from '@/hooks/use-products';
@@ -15,6 +16,7 @@ import { AddToCartForm } from './_components/add-to-cart-form';
 import { AiRecommendations } from '@/components/ai-recommendations';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -84,9 +86,16 @@ export default function ProductDetailPage() {
         </div>
         <div className="flex flex-col justify-center py-4">
           <div className="space-y-4">
-            <span className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">{product.category}</span>
+            <span className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">{product.category} / {product.subCategory}</span>
             <h1 className="text-4xl lg:text-5xl font-bold font-headline">{product.name}</h1>
-            <p className="text-3xl font-medium text-primary">₱{product.price.toFixed(2)}</p>
+            <div className="flex items-center gap-4">
+              <p className="text-3xl font-medium text-primary">₱{product.price.toFixed(2)}</p>
+              {product.quantity > 0 ? (
+                  <Badge>{product.quantity} in stock</Badge>
+              ) : (
+                  <Badge variant="destructive">Out of stock</Badge>
+              )}
+            </div>
              <Separator className="my-6" />
             <p className="text-muted-foreground leading-relaxed">{product.description}</p>
             
