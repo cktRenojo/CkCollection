@@ -44,6 +44,9 @@ const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Unise
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt', 'Shorts', 'Shoes'];
 const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
 
+const upperWearSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'T-Shirt', 'Sweater', 'Dress', 'Coat', 'Polo Shirt'];
+const lowerWearSubCategories: ProductSubCategory[] = ['Trousers', 'Jeans', 'Skirt', 'Shorts'];
+
 
 export default function AdminPage() {
   const { products, addProduct, updateProduct, removeProduct, loading: productsLoading } = useProducts();
@@ -68,6 +71,9 @@ export default function AdminPage() {
   const [newProductSizes, setNewProductSizes] = useState<ProductSize[]>([]);
   const [newProductCategory, setNewProductCategory] = useState<ProductCategory | ''>('');
   const [newProductSubCategory, setNewProductSubCategory] = useState<ProductSubCategory | ''>('');
+  const [newProductWidth, setNewProductWidth] = useState('');
+  const [newProductLength, setNewProductLength] = useState('');
+  const [newProductWaistSize, setNewProductWaistSize] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State for edit product form
@@ -80,6 +86,9 @@ export default function AdminPage() {
   const [editProductSizes, setEditProductSizes] = useState<ProductSize[]>([]);
   const [editProductCategory, setEditProductCategory] = useState<ProductCategory | ''>('');
   const [editProductSubCategory, setEditProductSubCategory] = useState<ProductSubCategory | ''>('');
+  const [editProductWidth, setEditProductWidth] = useState('');
+  const [editProductLength, setEditProductLength] = useState('');
+  const [editProductWaistSize, setEditProductWaistSize] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   
   const { toast } = useToast();
@@ -138,6 +147,9 @@ export default function AdminPage() {
     setNewProductSizes([]);
     setNewProductCategory('');
     setNewProductSubCategory('');
+    setNewProductWidth('');
+    setNewProductLength('');
+    setNewProductWaistSize('');
     setIsSubmitting(false);
   }
 
@@ -213,6 +225,9 @@ export default function AdminPage() {
       sizes: newProductSizes,
       quantity: quantityValue,
       dataAiHint: 'fashion apparel',
+      ...(newProductWidth && { width: parseFloat(newProductWidth) }),
+      ...(newProductLength && { length: parseFloat(newProductLength) }),
+      ...(newProductWaistSize && { waistSize: parseFloat(newProductWaistSize) }),
     };
 
     try {
@@ -237,6 +252,9 @@ export default function AdminPage() {
     setEditProductSizes(product.sizes);
     setEditProductCategory(product.category);
     setEditProductSubCategory(product.subCategory);
+    setEditProductWidth(product.width?.toString() ?? '');
+    setEditProductLength(product.length?.toString() ?? '');
+    setEditProductWaistSize(product.waistSize?.toString() ?? '');
     setEditProductImage(null);
     setIsEditDialogOpen(true);
   };
@@ -270,6 +288,21 @@ export default function AdminPage() {
       sizes: editProductSizes,
       quantity: quantityValue,
     };
+
+    if (upperWearSubCategories.includes(editProductSubCategory as ProductSubCategory)) {
+      productData.width = editProductWidth ? parseFloat(editProductWidth) : undefined;
+      productData.length = editProductLength ? parseFloat(editProductLength) : undefined;
+      productData.waistSize = undefined;
+    } else if (lowerWearSubCategories.includes(editProductSubCategory as ProductSubCategory)) {
+      productData.waistSize = editProductWaistSize ? parseFloat(editProductWaistSize) : undefined;
+      productData.width = undefined;
+      productData.length = undefined;
+    } else {
+      productData.width = undefined;
+      productData.length = undefined;
+      productData.waistSize = undefined;
+    }
+
 
     try {
       await updateProduct(editingProduct.id, productData, editProductImage);
@@ -391,6 +424,26 @@ export default function AdminPage() {
                             </Select>
                         </div>
                     </div>
+
+                    {upperWearSubCategories.includes(newProductSubCategory as ProductSubCategory) && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="width">Width (in)</Label>
+                                <Input id="width" type="number" value={newProductWidth} onChange={(e) => setNewProductWidth(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="length">Length (in)</Label>
+                                <Input id="length" type="number" value={newProductLength} onChange={(e) => setNewProductLength(e.target.value)} />
+                            </div>
+                        </div>
+                    )}
+                    
+                    {lowerWearSubCategories.includes(newProductSubCategory as ProductSubCategory) && (
+                        <div className="space-y-2">
+                            <Label htmlFor="waistSize">Waist Size (in)</Label>
+                            <Input id="waistSize" type="number" value={newProductWaistSize} onChange={(e) => setNewProductWaistSize(e.target.value)} />
+                        </div>
+                    )}
                     
                     <div className="space-y-2">
                         <Label>Available Sizes</Label>
@@ -521,6 +574,26 @@ export default function AdminPage() {
                         </div>
                     </div>
                     
+                    {upperWearSubCategories.includes(editProductSubCategory as ProductSubCategory) && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-width">Width (in)</Label>
+                                <Input id="edit-width" type="number" value={editProductWidth} onChange={(e) => setEditProductWidth(e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-length">Length (in)</Label>
+                                <Input id="edit-length" type="number" value={editProductLength} onChange={(e) => setEditProductLength(e.target.value)} />
+                            </div>
+                        </div>
+                    )}
+                    
+                    {lowerWearSubCategories.includes(editProductSubCategory as ProductSubCategory) && (
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-waistSize">Waist Size (in)</Label>
+                            <Input id="edit-waistSize" type="number" value={editProductWaistSize} onChange={(e) => setEditProductWaistSize(e.target.value)} />
+                        </div>
+                    )}
+
                     <div className="space-y-2">
                         <Label>Available Sizes</Label>
                         <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
@@ -547,6 +620,7 @@ export default function AdminPage() {
                   </div>
                 </ScrollArea>
                 <DialogFooter>
+                    <Button variant="destructive" className="mr-auto" onClick={() => setProductToDelete(editingProduct)}>Delete</Button>
                     <Button type="button" onClick={handleUpdateProduct} disabled={isUpdating}>
                       {isUpdating ? (
                         <>
@@ -596,6 +670,8 @@ export default function AdminPage() {
               onClick={async () => {
                 if (productToDelete) {
                   await handleRemoveProduct(productToDelete.id);
+                  setProductToDelete(null);
+                  setIsEditDialogOpen(false); // Close edit dialog if open
                 }
               }}
             >

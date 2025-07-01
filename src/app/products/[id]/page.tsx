@@ -89,6 +89,18 @@ export default function ProductDetailPage() {
             <p className="text-3xl font-medium text-primary">₱{product.price.toFixed(2)}</p>
              <Separator className="my-6" />
             <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+            
+            {(product.width || product.length || product.waistSize) && (
+              <div className="pt-4">
+                <h3 className="text-base font-semibold mb-2">Specifications</h3>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  {product.width && <p>Width: {product.width} in.</p>}
+                  {product.length && <p>Length: {product.length} in.</p>}
+                  {product.waistSize && <p>Waist Size: {product.waistSize} in.</p>}
+                </div>
+              </div>
+            )}
+
             <div className="pt-4">
               <AddToCartForm product={product} />
             </div>

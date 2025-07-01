@@ -13,6 +13,9 @@ export type Product = {
   subCategory: ProductSubCategory;
   dataAiHint?: string;
   quantity: number;
+  width?: number;
+  length?: number;
+  waistSize?: number;
 };
 
 export type CartItem = {
