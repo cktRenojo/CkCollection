@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -17,8 +18,9 @@ const createMockProduct = (rec: ProductRecommendationsOutput['recommendedProduct
     description: rec.description,
     price: rec.price,
     category: rec.category as Product['category'],
-    images: ['https://placehold.co/600x800'],
+    images: ['https://placehold.co/600x800.png'],
     sizes: ['S', 'M', 'L'], // Default sizes
+    quantity: 10, // Mock quantity
     dataAiHint: 'fashion model',
 });
 
