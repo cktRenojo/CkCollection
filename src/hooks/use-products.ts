@@ -2,10 +2,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
-import { db, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db } from '@/lib/firebase';
 import { useToast } from './use-toast';
 
 interface ProductsContextType {
@@ -17,6 +16,18 @@ interface ProductsContextType {
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
+
+const fileToDataUri = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 
 export const ProductsProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -40,106 +51,54 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const uploadImage = async (productId: string, file: File): Promise<string> => {
-    const imageRef = ref(storage, `products/${productId}/${file.name}`);
-    await uploadBytes(imageRef, file);
-    return getDownloadURL(imageRef);
-  };
-
   const addProduct = async (productData: Omit<Product, 'id' | 'images'>, imageFile: File | null) => {
-    const newProductRef = doc(collection(db, 'products'));
-    const productId = newProductRef.id;
-
-    // Set a placeholder image first for a snappy UI response
-    const newProductDocument = {
-      id: productId,
-      ...productData,
-      images: ['https://placehold.co/600x800'],
-    };
-
-    // Immediately add the product with the placeholder.
-    await setDoc(newProductRef, newProductDocument);
-    
-    // Then, upload the real image in the background.
+    let imageUrls = ['https://placehold.co/600x800'];
     if (imageFile) {
-        (async () => {
-            try {
-                const imageUrl = await uploadImage(productId, imageFile);
-                await updateDoc(newProductRef, { images: [imageUrl] });
-            } catch (error) {
-                console.error("Image upload failed:", error);
-                toast({
-                    title: 'Image Upload Failed',
-                    description: 'The product was added, but the image upload failed.',
-                    variant: 'destructive',
-                });
-            }
-        })();
+        try {
+            const dataUri = await fileToDataUri(imageFile);
+            imageUrls = [dataUri];
+        } catch (error) {
+            console.error("Failed to convert file to Data URI", error);
+            toast({
+                title: 'Image Processing Failed',
+                description: 'Could not process the image. Using a placeholder.',
+                variant: 'destructive',
+            });
+        }
     }
+
+    // The user will experience a delay here as the data URI is generated and uploaded.
+    await addDoc(collection(db, 'products'), {
+      ...productData,
+      images: imageUrls,
+    });
   };
   
   const updateProduct = async (productId: string, productData: Partial<Omit<Product, 'id' | 'images'>>, imageFile: File | null) => {
     const productRef = doc(db, 'products', productId);
-    
-    // Immediately update the text data for a snappy UI.
-    await updateDoc(productRef, productData);
-    
-    // Upload new image in the background.
-    if (imageFile) {
-        (async () => {
-            try {
-                const oldProductSnap = await getDoc(productRef);
-                if (oldProductSnap.exists()) {
-                    const oldProduct = oldProductSnap.data() as Product;
-                    // Attempt to delete old image if it's a firebase storage URL
-                    if (oldProduct.images && oldProduct.images[0] && oldProduct.images[0].includes('firebasestorage.googleapis.com')) {
-                        const oldImageRef = ref(storage, oldProduct.images[0]);
-                        await deleteObject(oldImageRef).catch(err => {
-                            // Ignore if object doesn't exist, log other errors.
-                            if (err.code !== 'storage/object-not-found') console.error("Could not delete old image", err);
-                        });
-                    }
-                }
+    const dataToUpdate: Partial<Omit<Product, 'id'>> = { ...productData };
 
-                const newImageUrl = await uploadImage(productId, imageFile);
-                await updateDoc(productRef, { images: [newImageUrl] });
-            } catch (error) {
-                console.error("Image update failed:", error);
-                toast({
-                    title: 'Image Update Failed',
-                    description: 'Product details updated, but the new image could not be uploaded.',
-                    variant: 'destructive',
-                });
-            }
-        })();
+    if (imageFile) {
+        try {
+            const dataUri = await fileToDataUri(imageFile);
+            dataToUpdate.images = [dataUri];
+        } catch (error) {
+            console.error("Failed to convert file to Data URI", error);
+            toast({
+                title: 'Image Processing Failed',
+                description: 'Could not process the new image. It has not been updated.',
+                variant: 'destructive',
+            });
+        }
     }
+    
+    await updateDoc(productRef, dataToUpdate);
   };
 
   const removeProduct = async (productId: string) => {
     const productRef = doc(db, 'products', productId);
     try {
-        const productSnap = await getDoc(productRef);
-        if (productSnap.exists()) {
-            const product = productSnap.data() as Product;
-            
-            // Delete from Firestore immediately for a fast UI response.
-            await deleteDoc(productRef);
-
-            // Delete the associated image from storage in the background.
-            if (product.images && product.images[0] && product.images[0].includes('firebasestorage.googleapis.com')) {
-                (async () => {
-                    try {
-                        const imageRef = ref(storage, product.images[0]);
-                        await deleteObject(imageRef);
-                    } catch (err: any) {
-                        // We can ignore 'object-not-found' errors, but log others.
-                        if (err.code !== 'storage/object-not-found') {
-                            console.error("Failed to delete product image from storage:", err);
-                        }
-                    }
-                })();
-            }
-        }
+        await deleteDoc(productRef);
     } catch (error) {
         console.error("Failed to remove product:", error);
         toast({
@@ -147,7 +106,7 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
             description: 'Could not remove product. Please try again.',
             variant: 'destructive',
         });
-        throw error; // Re-throw to be caught by the calling component if needed.
+        throw error;
     }
   };
 
