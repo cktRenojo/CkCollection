@@ -237,7 +237,7 @@ export default function Header() {
           
           {isMounted ? (
             <>
-              {!isAdmin && (
+              {!isAdmin && user && (
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative">
