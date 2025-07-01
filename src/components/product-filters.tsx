@@ -17,9 +17,9 @@ interface ProductFiltersProps {
   setFilters: React.Dispatch<React.SetStateAction<any>>;
 }
 
+// Helper functions duplicated from page.tsx to ensure consistent filtering logic.
 const getEffectiveCategory = (product: Product): ProductCategory => {
     if (product.category === 'New Arrivals' && product.createdAt && product.genderCategory) {
-        // Firestore timestamp can be an object, so we need to convert it to a Date
         const createdAtDate = product.createdAt.toDate ? product.createdAt.toDate() : new Date(product.createdAt);
         if (differenceInDays(new Date(), createdAtDate) > 30) {
             return product.genderCategory;
@@ -28,35 +28,42 @@ const getEffectiveCategory = (product: Product): ProductCategory => {
     return product.category;
 };
 
+const getProductDisplayCategories = (product: Product): string[] => {
+    const categories: Set<string> = new Set();
+    const effectiveCategory = getEffectiveCategory(product);
+    categories.add(effectiveCategory);
+
+    if (effectiveCategory === 'Unisex') {
+        categories.add('Men');
+        categories.add('Women');
+    }
+    
+    if (product.category === 'New Arrivals' && effectiveCategory === 'New Arrivals' && product.genderCategory) {
+        categories.add(product.genderCategory);
+        if (product.genderCategory === 'Unisex') {
+            categories.add('Men');
+            categories.add('Women');
+        }
+    }
+
+    return Array.from(categories);
+}
+
+const mainFilterCategories = ['All', 'Women', 'Men', 'New Arrivals', 'Unisex'];
+
+
 export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
   const { products } = useProducts();
-
-  const productsWithEffectiveCategory = useMemo(() => {
-    return products.map(p => ({
-        ...p,
-        effectiveCategory: getEffectiveCategory(p)
-    }));
-  }, [products]);
-
-  const categories = useMemo(() => {
-    if (!products.length) return ['All'];
-    const productCategories = new Set(productsWithEffectiveCategory.map((p) => p.effectiveCategory).filter(Boolean) as string[]);
-    productCategories.add('All');
-    return [...productCategories].sort((a, b) => {
-      if (a === 'All') return -1;
-      if (b === 'All') return 1;
-      return a.localeCompare(b);
-    });
-  }, [productsWithEffectiveCategory]);
-
+  
   const subCategories = useMemo(() => {
     if (!products.length) return ['All'];
-    const filteredProducts =
+
+    const relevantProducts =
       filters.category === 'All'
-        ? productsWithEffectiveCategory
-        : productsWithEffectiveCategory.filter((p) => p.effectiveCategory === filters.category);
+        ? products
+        : products.filter((p) => getProductDisplayCategories(p).includes(filters.category));
     
-    const productSubCategories = new Set(filteredProducts.map((p) => p.subCategory).filter(Boolean) as string[]);
+    const productSubCategories = new Set(relevantProducts.map((p) => p.subCategory).filter(Boolean) as string[]);
     productSubCategories.add('All');
 
     return [...productSubCategories].sort((a, b) => {
@@ -64,7 +71,7 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
       if (b === 'All') return 1;
       return a.localeCompare(b);
     });
-  }, [productsWithEffectiveCategory, filters.category]);
+  }, [products, filters.category]);
 
 
   const handleCategoryChange = (value: string) => {
@@ -88,7 +95,7 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((category) => (
+              {mainFilterCategories.map((category) => (
                 <SelectItem key={category} value={category}>{category}</SelectItem>
               ))}
             </SelectContent>
