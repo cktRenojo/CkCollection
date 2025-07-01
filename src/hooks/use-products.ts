@@ -50,61 +50,69 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
     const newProductRef = doc(collection(db, 'products'));
     const productId = newProductRef.id;
 
-    let imageUrl = 'https://placehold.co/600x800';
-    if (imageFile) {
-        try {
-            imageUrl = await uploadImage(productId, imageFile);
-        } catch (error) {
-            console.error("Image upload failed:", error);
-            toast({
-                title: 'Image Upload Failed',
-                description: 'Could not upload image. Please try again.',
-                variant: 'destructive',
-            });
-            return;
-        }
-    }
-
+    // Set a placeholder image first for a snappy UI response
     const newProductDocument = {
       id: productId,
       ...productData,
-      images: [imageUrl],
+      images: ['https://placehold.co/600x800'],
     };
 
+    // Immediately add the product with the placeholder.
     await setDoc(newProductRef, newProductDocument);
+    
+    // Then, upload the real image in the background.
+    if (imageFile) {
+        (async () => {
+            try {
+                const imageUrl = await uploadImage(productId, imageFile);
+                await updateDoc(newProductRef, { images: [imageUrl] });
+            } catch (error) {
+                console.error("Image upload failed:", error);
+                toast({
+                    title: 'Image Upload Failed',
+                    description: 'The product was added, but the image upload failed.',
+                    variant: 'destructive',
+                });
+            }
+        })();
+    }
   };
   
   const updateProduct = async (productId: string, productData: Partial<Omit<Product, 'id' | 'images'>>, imageFile: File | null) => {
     const productRef = doc(db, 'products', productId);
-    const productUpdateData: { [key: string]: any } = { ...productData };
-
+    
+    // Immediately update the text data for a snappy UI.
+    await updateDoc(productRef, productData);
+    
+    // Upload new image in the background.
     if (imageFile) {
-        try {
-            const oldProductSnap = await getDoc(productRef);
-            if (oldProductSnap.exists()) {
-                const oldProduct = oldProductSnap.data() as Product;
-                if (oldProduct.images && oldProduct.images[0] && oldProduct.images[0].includes('firebasestorage.googleapis.com')) {
-                    const oldImageRef = ref(storage, oldProduct.images[0]);
-                    await deleteObject(oldImageRef).catch(err => {
-                        if (err.code !== 'storage/object-not-found') console.error("Could not delete old image", err);
-                    });
+        (async () => {
+            try {
+                const oldProductSnap = await getDoc(productRef);
+                if (oldProductSnap.exists()) {
+                    const oldProduct = oldProductSnap.data() as Product;
+                    // Attempt to delete old image if it's a firebase storage URL
+                    if (oldProduct.images && oldProduct.images[0] && oldProduct.images[0].includes('firebasestorage.googleapis.com')) {
+                        const oldImageRef = ref(storage, oldProduct.images[0]);
+                        await deleteObject(oldImageRef).catch(err => {
+                            // Ignore if object doesn't exist, log other errors.
+                            if (err.code !== 'storage/object-not-found') console.error("Could not delete old image", err);
+                        });
+                    }
                 }
+
+                const newImageUrl = await uploadImage(productId, imageFile);
+                await updateDoc(productRef, { images: [newImageUrl] });
+            } catch (error) {
+                console.error("Image update failed:", error);
+                toast({
+                    title: 'Image Update Failed',
+                    description: 'Product details updated, but the new image could not be uploaded.',
+                    variant: 'destructive',
+                });
             }
-
-            const newImageUrl = await uploadImage(productId, imageFile);
-            productUpdateData.images = [newImageUrl];
-        } catch (error) {
-            console.error("Image upload failed:", error);
-            toast({
-                title: 'Image Upload Failed',
-                description: 'Could not update image. Please try again.',
-                variant: 'destructive',
-            });
-            return;
-        }
+        })();
     }
-
-    await updateDoc(productRef, productUpdateData);
   };
 
   const removeProduct = async (productId: string) => {
@@ -113,18 +121,25 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
         const productSnap = await getDoc(productRef);
         if (productSnap.exists()) {
             const product = productSnap.data() as Product;
+            
+            // Delete from Firestore immediately for a fast UI response.
+            await deleteDoc(productRef);
+
+            // Delete the associated image from storage in the background.
             if (product.images && product.images[0] && product.images[0].includes('firebasestorage.googleapis.com')) {
-                try {
-                    const imageRef = ref(storage, product.images[0]);
-                    await deleteObject(imageRef);
-                } catch (err: any) {
-                    if (err.code !== 'storage/object-not-found') {
-                        console.error("Failed to delete product image:", err);
+                (async () => {
+                    try {
+                        const imageRef = ref(storage, product.images[0]);
+                        await deleteObject(imageRef);
+                    } catch (err: any) {
+                        // We can ignore 'object-not-found' errors, but log others.
+                        if (err.code !== 'storage/object-not-found') {
+                            console.error("Failed to delete product image from storage:", err);
+                        }
                     }
-                }
+                })();
             }
         }
-        await deleteDoc(productRef);
     } catch (error) {
         console.error("Failed to remove product:", error);
         toast({
@@ -132,7 +147,7 @@ export const ProductsProvider = ({ children }: { children: ReactNode }) => {
             description: 'Could not remove product. Please try again.',
             variant: 'destructive',
         });
-        throw error;
+        throw error; // Re-throw to be caught by the calling component if needed.
     }
   };
 
