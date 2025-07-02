@@ -8,22 +8,22 @@
   :root {
     --background: 0 0% 26%; /* #424242 */
     --foreground: 0 0% 98%; /* #FAFAFA */
-    --card: 0 0% 29%; /* #4A4A4A */
+    --card: 0 0% 16%; /* #292929 */
     --card-foreground: 0 0% 98%; /* #FAFAFA */
-    --popover: 0 0% 29%; /* #4A4A4A */
+    --popover: 0 0% 16%; /* #292929 */
     --popover-foreground: 0 0% 98%; /* #FAFAFA */
     --primary: 0 0% 98%; /* #FAFAFA */
-    --primary-foreground: 0 0% 9%; /* #171717 */
-    --secondary: 0 0% 41%; /* #686868 */
+    --primary-foreground: 0 0% 7%; /* #131313 */
+    --secondary: 0 0% 16%; /* #292929 */
     --secondary-foreground: 0 0% 98%; /* #FAFAFA */
-    --muted: 0 0% 41%; /* #686868 */
-    --muted-foreground: 0 0% 63%; /* #A1A1A1 */
-    --accent: 0 0% 41%; /* #686868 */
+    --muted: 0 0% 16%; /* #292929 */
+    --muted-foreground: 0 0% 41%; /* #686868 */
+    --accent: 0 0% 16%; /* #292929 */
     --accent-foreground: 0 0% 98%; /* #FAFAFA */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 41%; /* #686868 */
-    --input: 0 0% 41%; /* #686868 */
+    --border: 0 0% 16%; /* #292929 */
+    --input: 0 0% 16%; /* #292929 */
     --ring: 0 0% 98%; /* #FAFAFA */
     --radius: 0.5rem;
   }
@@ -31,22 +31,22 @@
   .dark {
     --background: 0 0% 26%; /* #424242 */
     --foreground: 0 0% 98%; /* #FAFAFA */
-    --card: 0 0% 29%; /* #4A4A4A */
+    --card: 0 0% 16%; /* #292929 */
     --card-foreground: 0 0% 98%; /* #FAFAFA */
-    --popover: 0 0% 29%; /* #4A4A4A */
+    --popover: 0 0% 16%; /* #292929 */
     --popover-foreground: 0 0% 98%; /* #FAFAFA */
     --primary: 0 0% 98%; /* #FAFAFA */
-    --primary-foreground: 0 0% 9%; /* #171717 */
-    --secondary: 0 0% 41%; /* #686868 */
+    --primary-foreground: 0 0% 7%; /* #131313 */
+    --secondary: 0 0% 16%; /* #292929 */
     --secondary-foreground: 0 0% 98%; /* #FAFAFA */
-    --muted: 0 0% 41%; /* #686868 */
-    --muted-foreground: 0 0% 63%; /* #A1A1A1 */
-    --accent: 0 0% 41%; /* #686868 */
+    --muted: 0 0% 16%; /* #292929 */
+    --muted-foreground: 0 0% 41%; /* #686868 */
+    --accent: 0 0% 16%; /* #292929 */
     --accent-foreground: 0 0% 98%; /* #FAFAFA */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 41%; /* #686868 */
-    --input: 0 0% 41%; /* #686868 */
+    --border: 0 0% 16%; /* #292929 */
+    --input: 0 0% 16%; /* #292929 */
     --ring: 0 0% 98%; /* #FAFAFA */
   }
 }
