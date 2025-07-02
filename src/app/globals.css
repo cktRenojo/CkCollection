@@ -30,7 +30,7 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 0 0% 18%;         /* Border color */
+    --border: 0 0% 22%;         /* Border color */
     --input: 0 0% 18%;          /* Input background */
     --ring: 0 0% 83%;           /* Ring color for focus states */
     
@@ -62,7 +62,7 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 0 0% 18%;
+    --border: 0 0% 22%;
     --input: 0 0% 18%;
     --ring: 0 0% 83%;
   }
