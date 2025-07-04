@@ -43,6 +43,7 @@ import { useRouter } from 'next/navigation';
 const allCategories: ProductCategory[] = ['Women', 'Men', 'New Arrivals', 'Unisex'];
 const allGenderCategories: ('Women' | 'Men' | 'Unisex')[] = ['Women', 'Men', 'Unisex'];
 const allSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'Trousers', 'Dress', 'T-Shirt', 'Sweater', 'Jeans', 'Coat', 'Polo Shirt', 'Scarf', 'Skirt', 'Shorts', 'Shoes'];
+const allSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
 
 const upperWearSubCategories: ProductSubCategory[] = ['Shirt', 'Blouse', 'Jacket', 'T-Shirt', 'Sweater', 'Dress', 'Coat', 'Polo Shirt'];
 const lowerWearSubCategories: ProductSubCategory[] = ['Trousers', 'Jeans', 'Skirt', 'Shorts'];
