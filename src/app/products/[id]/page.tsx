@@ -2,7 +2,7 @@
 'use client';
 
 import { useProducts } from '@/hooks/use-products';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -17,15 +17,21 @@ import { AiRecommendations } from '@/components/ai-recommendations';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ProductDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { products, loading } = useProducts();
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="mb-6">
+          <Skeleton className="h-10 w-40" />
+        </div>
         <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
             <div>
                 <Skeleton className="aspect-[3/4] w-full rounded-xl" />
@@ -57,6 +63,12 @@ export default function ProductDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="mb-6">
+        <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Products
+        </Button>
+      </div>
       <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
         <div>
           <Carousel className="w-full">
