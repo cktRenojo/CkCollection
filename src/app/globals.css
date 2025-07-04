@@ -7,13 +7,13 @@
 @layer base {
   :root {
     --background: 21 29% 23%;      /* #4B352A - Dark Brown */
-    --foreground: 62 59% 84%;      /* #F0F2BD - Pale Yellow */
+    --foreground: 60 30% 90%;      /* #ECECDB - Soft off-white */
     
     --card: 21 29% 18%;            /* Darker Brown */
-    --card-foreground: 62 59% 84%;
+    --card-foreground: 60 30% 90%;
     
     --popover: 21 29% 18%;
-    --popover-foreground: 62 59% 84%;
+    --popover-foreground: 60 30% 90%;
     
     --primary: 27 60% 52%;         /* #CA7842 - Warm Orange */
     --primary-foreground: 21 29% 15%; /* Dark brown for text on orange */
@@ -22,10 +22,10 @@
     --secondary-foreground: 21 29% 23%; /* Dark brown text on green */
     
     --muted: 21 20% 28%;           /* A slightly lighter brown for muted bg */
-    --muted-foreground: 62 40% 75%; /* Dimmer yellow for muted text */
+    --muted-foreground: 60 15% 75%; /* #C4C4B9 - Muted gray-beige */
     
     --accent: 21 20% 28%;
-    --accent-foreground: 62 59% 84%;
+    --accent-foreground: 60 30% 90%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
@@ -39,13 +39,13 @@
 
   .dark {
     --background: 21 29% 23%;      /* #4B352A - Dark Brown */
-    --foreground: 62 59% 84%;      /* #F0F2BD - Pale Yellow */
+    --foreground: 60 30% 90%;      /* #ECECDB - Soft off-white */
     
     --card: 21 29% 18%;            /* Darker Brown */
-    --card-foreground: 62 59% 84%;
+    --card-foreground: 60 30% 90%;
     
     --popover: 21 29% 18%;
-    --popover-foreground: 62 59% 84%;
+    --popover-foreground: 60 30% 90%;
     
     --primary: 27 60% 52%;         /* #CA7842 - Warm Orange */
     --primary-foreground: 21 29% 15%; /* Dark brown for text on orange */
@@ -54,10 +54,10 @@
     --secondary-foreground: 21 29% 23%; /* Dark brown text on green */
     
     --muted: 21 20% 28%;           /* A slightly lighter brown for muted bg */
-    --muted-foreground: 62 40% 75%; /* Dimmer yellow for muted text */
+    --muted-foreground: 60 15% 75%; /* #C4C4B9 - Muted gray-beige */
     
     --accent: 21 20% 28%;
-    --accent-foreground: 62 59% 84%;
+    --accent-foreground: 60 30% 90%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
