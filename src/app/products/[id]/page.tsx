@@ -64,7 +64,7 @@ export default function ProductDetailPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-6">
-        <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Products
         </Button>
