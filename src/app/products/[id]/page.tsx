@@ -89,7 +89,7 @@ export default function ProductDetailPage() {
             <span className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">{product.category} / {product.subCategory}</span>
             <h1 className="text-4xl lg:text-5xl font-bold font-headline">{product.name}</h1>
             <div className="flex items-center gap-4">
-              <p className="text-3xl font-medium text-primary">₱{product.price.toFixed(2)}</p>
+              <p className="text-3xl font-medium text-accent">₱{product.price.toFixed(2)}</p>
               {product.quantity > 0 ? (
                   <Badge>{product.quantity} in stock</Badge>
               ) : (
