@@ -24,8 +24,8 @@
     --muted: 215 9% 25%;
     --muted-foreground: 0 0% 80%;
     
-    --accent: 215 9% 28%;
-    --accent-foreground: 0 0% 93%;
+    --accent: 186 58% 78%; /* #A6E3E9 */
+    --accent-foreground: 210 17% 10%; /* A dark color for contrast */
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
@@ -56,8 +56,8 @@
     --muted: 215 9% 25%;
     --muted-foreground: 0 0% 80%;
     
-    --accent: 215 9% 28%;
-    --accent-foreground: 0 0% 93%;
+    --accent: 186 58% 78%; /* #A6E3E9 */
+    --accent-foreground: 210 17% 10%; /* A dark color for contrast */
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
