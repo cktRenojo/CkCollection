@@ -79,9 +79,9 @@ export function ProductFilters({ filters, setFilters }: ProductFiltersProps) {
   const handleCategoryChange = (value: string) => {
     // Also update the URL to keep things consistent
     if (value === 'All') {
-        router.push('/');
+        router.push('/shop');
     } else {
-        router.push(`/?category=${encodeURIComponent(value)}`);
+        router.push(`/shop?category=${encodeURIComponent(value)}`);
     }
   };
 

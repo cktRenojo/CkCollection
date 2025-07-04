@@ -1,159 +1,150 @@
+
 'use client';
 
-import { Suspense, useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import type { Product, ProductCategory } from '@/lib/types';
-import ProductCard from '@/components/product-card';
-import { ProductFilters } from '@/components/product-filters';
-import { useProducts } from '@/hooks/use-products';
-import { Skeleton } from '@/components/ui/skeleton';
-import { differenceInDays } from 'date-fns';
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { ShoppingBag, Sparkles, Truck, MessageSquare, ShieldCheck } from 'lucide-react';
+import Autoplay from 'embla-carousel-autoplay';
 
-const getEffectiveCategory = (product: Product): ProductCategory => {
-    if (product.category === 'New Arrivals' && product.createdAt && product.genderCategory) {
-        const createdAtDate = product.createdAt.toDate ? product.createdAt.toDate() : new Date(product.createdAt);
-        if (differenceInDays(new Date(), createdAtDate) > 30) {
-            return product.genderCategory;
-        }
-    }
-    return product.category;
-};
+const carouselImages = [
+  { src: 'https://placehold.co/1200x600.png', alt: 'Fashion model wearing modern apparel', hint: 'fashion model' },
+  { src: 'https://placehold.co/1200x600.png', alt: 'Collection of stylish clothes on display', hint: 'clothing collection' },
+  { src: 'https://placehold.co/1200x600.png', alt: 'Man and woman posing in trendy outfits', hint: 'couple fashion' },
+];
 
-const getProductDisplayCategories = (product: Product): string[] => {
-    const categories: Set<string> = new Set();
-    const effectiveCategory = getEffectiveCategory(product);
-    categories.add(effectiveCategory);
+const features = [
+  {
+    icon: ShoppingBag,
+    title: 'Affordable Fashion',
+    description: 'Trendy and high-quality apparel for every lifestyle without breaking the bank.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Curated Styles',
+    description: 'Carefully selected pieces for men and women, from casual essentials to statement items.',
+  },
+  {
+    icon: Truck,
+    title: 'Fast Shipping',
+    description: 'Reliable and prompt delivery to get your new favorite clothes to you quickly.',
+  },
+  {
+    icon: MessageSquare,
+    title: 'Customer Service',
+    description: 'Our responsive support team is always here to help you with any questions.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Quality Guaranteed',
+    description: 'We stand by our products. If you\'re not satisfied, we offer a money-back guarantee.',
+  },
+];
 
-    if (effectiveCategory === 'Unisex') {
-        categories.add('Men');
-        categories.add('Women');
-    }
-    
-    if (product.category === 'New Arrivals' && effectiveCategory === 'New Arrivals' && product.genderCategory) {
-        categories.add(product.genderCategory);
-        if (product.genderCategory === 'Unisex') {
-            categories.add('Men');
-            categories.add('Women');
-        }
-    }
+export default function LandingPage() {
+    const autoplayPlugin = React.useRef(
+        Autoplay({ delay: 5000, stopOnInteraction: false })
+    );
 
-    return Array.from(categories);
-}
-
-function ProductGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
-      {Array.from({ length: 9 }).map((_, index) => (
-        <div key={index} className="space-y-4">
-            <Skeleton className="aspect-[3/4] w-full rounded-lg" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-4/5" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-6 w-1/4" />
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center text-center text-white overflow-hidden">
+            <div className="absolute inset-0 z-0">
+                <Image
+                    src="https://placehold.co/1600x900.png"
+                    alt="Stylish background image"
+                    fill
+                    className="object-cover"
+                    priority
+                    data-ai-hint="fashion background"
+                />
+                <div className="absolute inset-0 bg-black/50" />
             </div>
-        </div>
-      ))}
-    </div>
-  );
-}
+          <div className="relative z-10 p-4">
+            <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4">Welcome to C&K Collections</h1>
+            <p className="max-w-2xl mx-auto text-lg md:text-xl text-white/90">
+                A curated online clothing store offering a wide variety of affordable, trendy, and high-quality apparel for both men and women. From casual essentials to statement pieces, we aim to bring style and comfort to every wardrobe.
+            </p>
+            <Button asChild size="lg" className="mt-8">
+              <Link href="/shop">Start Shopping</Link>
+            </Button>
+          </div>
+        </section>
 
-function HomeContent() {
-  const { products: allProducts, loading } = useProducts();
-  const searchParams = useSearchParams();
-  const categoryFromUrl = searchParams.get('category');
-
-  const [filters, setFilters] = useState({
-    category: categoryFromUrl || 'All',
-    subCategory: 'All',
-  });
-
-  useEffect(() => {
-    setFilters(prevFilters => ({
-      ...prevFilters,
-      category: categoryFromUrl || 'All',
-      subCategory: 'All', // Reset sub-category when main category changes via URL
-    }));
-  }, [categoryFromUrl]);
-
-  const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
-      let categoryMatch = false;
-      if (filters.category === 'All') {
-        categoryMatch = true;
-      } else {
-        const displayCategories = getProductDisplayCategories(product);
-        categoryMatch = displayCategories.includes(filters.category);
-      }
-      
-      const subCategoryMatch = filters.subCategory === 'All' || product.subCategory === filters.subCategory;
-      return categoryMatch && subCategoryMatch;
-    });
-  }, [allProducts, filters]);
-
-  return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-       <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-headline font-bold mb-4">Explore the Collection</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Timeless pieces, sustainably crafted. Discover your new favorite staples from our curated collection of modern apparel.
-          </p>
-        </div>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <aside className="lg:col-span-1 lg:sticky lg:top-24 h-fit">
-          <ProductFilters filters={filters} setFilters={setFilters} />
-        </aside>
-        <main className="lg:col-span-3">
-          {loading ? (
-             <ProductGridSkeleton />
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+        {/* Carousel Section */}
+        <section className="py-12 md:py-20 bg-background">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-headline font-bold text-center mb-10">Featured Styles</h2>
+            <Carousel
+              plugins={[autoplayPlugin.current]}
+              onMouseEnter={() => autoplayPlugin.current.stop()}
+              onMouseLeave={() => autoplayPlugin.current.play()}
+              className="w-full max-w-4xl mx-auto"
+              opts={{
+                loop: true,
+              }}
+            >
+              <CarouselContent>
+                {carouselImages.map((image, index) => (
+                  <CarouselItem key={index}>
+                    <Card className="overflow-hidden">
+                      <CardContent className="p-0">
+                        <div className="aspect-video relative">
+                             <Image src={image.src} alt={image.alt} fill className="object-cover" data-ai-hint={image.hint}/>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden sm:flex" />
+              <CarouselNext className="hidden sm:flex" />
+            </Carousel>
+          </div>
+        </section>
+        
+        {/* "Why Shop With Us" Section */}
+        <section className="py-12 md:py-20">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-headline font-bold text-center mb-10">Why Shop With Us?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {features.slice(0, 3).map((feature, index) => (
+                <Card key={index} className="text-center">
+                  <CardHeader>
+                    <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-2">
+                        <feature.icon className="h-8 w-8 text-primary" />
+                    </div>
+                    <CardTitle>{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{feature.description}</p>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-16 flex flex-col items-center justify-center min-h-[40vh] bg-background-soft rounded-lg">
-              <p className="text-2xl font-semibold">No products found</p>
-              <p className="text-lg text-muted-foreground mt-2">Try adjusting your filters to find what you're looking for.</p>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mt-8">
+               {features.slice(3).map((feature, index) => (
+                <Card key={index} className="text-center">
+                  <CardHeader>
+                    <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-2">
+                        <feature.icon className="h-8 w-8 text-primary" />
+                    </div>
+                    <CardTitle>{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          )}
-        </main>
-      </div>
+          </div>
+        </section>
+      </main>
     </div>
-  );
-}
-
-
-function HomePageSkeleton() {
-    return (
-        <div className="container mx-auto px-4 py-8 md:py-12">
-            <div className="text-center mb-12">
-                <Skeleton className="h-12 w-3/4 mx-auto" />
-                <Skeleton className="h-6 w-1/2 mx-auto mt-4" />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <aside className="lg:col-span-1 lg:sticky lg:top-24 h-fit">
-                    <Card>
-                        <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-10 w-full" /></div>
-                            <div className="space-y-2"><Skeleton className="h-4 w-1/4" /><Skeleton className="h-10 w-full" /></div>
-                        </CardContent>
-                    </Card>
-                </aside>
-                <main className="lg:col-span-3">
-                    <ProductGridSkeleton />
-                </main>
-            </div>
-        </div>
-    )
-}
-
-
-export default function Home() {
-  return (
-    <Suspense fallback={<HomePageSkeleton />}>
-      <HomeContent />
-    </Suspense>
   );
 }

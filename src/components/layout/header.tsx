@@ -39,7 +39,7 @@ import { cn } from '@/lib/utils';
 import { useMounted } from '@/hooks/use-mounted';
 
 const navLinks = [
-  { href: '/', label: 'Shop' },
+  { href: '/shop', label: 'Shop' },
   { href: '/contact', label: 'Contact' },
 ];
 
