@@ -6,65 +6,65 @@
 
 @layer base {
   :root {
-    --background: 21 29% 23%;      /* #4B352A - Dark Brown */
-    --foreground: 60 30% 90%;      /* #ECECDB - Soft off-white */
+    --background: 210 17% 16%;      /* #222831 */
+    --foreground: 0 0% 93%;          /* #EEEEEE */
     
-    --card: 21 29% 18%;            /* Darker Brown */
-    --card-foreground: 60 30% 90%;
+    --card: 215 9% 25%;            /* #393E46 */
+    --card-foreground: 0 0% 93%;
     
-    --popover: 21 29% 18%;
-    --popover-foreground: 60 30% 90%;
+    --popover: 215 9% 25%;
+    --popover-foreground: 0 0% 93%;
     
-    --primary: 27 60% 52%;         /* #CA7842 - Warm Orange */
-    --primary-foreground: 21 29% 15%; /* Dark brown for text on orange */
+    --primary: 183 100% 35%;         /* #00ADB5 */
+    --primary-foreground: 210 17% 10%; /* Darker version for contrast */
     
-    --secondary: 89 31% 71%;       /* #B2CD9C - Light Green */
-    --secondary-foreground: 21 29% 23%; /* Dark brown text on green */
+    --secondary: 215 9% 25%;
+    --secondary-foreground: 0 0% 93%;
     
-    --muted: 21 20% 28%;           /* A slightly lighter brown for muted bg */
-    --muted-foreground: 60 15% 75%; /* #C4C4B9 - Muted gray-beige */
+    --muted: 215 9% 25%;
+    --muted-foreground: 0 0% 80%;
     
-    --accent: 21 20% 28%;
-    --accent-foreground: 60 30% 90%;
+    --accent: 215 9% 28%;
+    --accent-foreground: 0 0% 93%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 21 20% 33%;         /* Border color */
-    --input: 21 20% 28%;          /* Input background */
-    --ring: 89 31% 71%;           /* Ring color for focus states (the green) */
+    --border: 215 9% 30%;
+    --input: 215 9% 25%;
+    --ring: 183 100% 35%;
     
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 21 29% 23%;      /* #4B352A - Dark Brown */
-    --foreground: 60 30% 90%;      /* #ECECDB - Soft off-white */
+    --background: 210 17% 16%;      /* #222831 */
+    --foreground: 0 0% 93%;          /* #EEEEEE */
     
-    --card: 21 29% 18%;            /* Darker Brown */
-    --card-foreground: 60 30% 90%;
+    --card: 215 9% 25%;            /* #393E46 */
+    --card-foreground: 0 0% 93%;
     
-    --popover: 21 29% 18%;
-    --popover-foreground: 60 30% 90%;
+    --popover: 215 9% 25%;
+    --popover-foreground: 0 0% 93%;
     
-    --primary: 27 60% 52%;         /* #CA7842 - Warm Orange */
-    --primary-foreground: 21 29% 15%; /* Dark brown for text on orange */
+    --primary: 183 100% 35%;         /* #00ADB5 */
+    --primary-foreground: 210 17% 10%; /* Darker version for contrast */
     
-    --secondary: 89 31% 71%;       /* #B2CD9C - Light Green */
-    --secondary-foreground: 21 29% 23%; /* Dark brown text on green */
+    --secondary: 215 9% 25%;
+    --secondary-foreground: 0 0% 93%;
     
-    --muted: 21 20% 28%;           /* A slightly lighter brown for muted bg */
-    --muted-foreground: 60 15% 75%; /* #C4C4B9 - Muted gray-beige */
+    --muted: 215 9% 25%;
+    --muted-foreground: 0 0% 80%;
     
-    --accent: 21 20% 28%;
-    --accent-foreground: 60 30% 90%;
+    --accent: 215 9% 28%;
+    --accent-foreground: 0 0% 93%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 21 20% 33%;         /* Border color */
-    --input: 21 20% 28%;          /* Input background */
-    --ring: 89 31% 71%;           /* Ring color for focus states (the green) */
+    --border: 215 9% 30%;
+    --input: 215 9% 25%;
+    --ring: 183 100% 35%;
   }
 }
 
