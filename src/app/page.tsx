@@ -14,6 +14,7 @@ const carouselImages = [
   { src: 'https://placehold.co/1200x600.png', alt: 'Fashion model wearing modern apparel', hint: 'fashion model' },
   { src: 'https://placehold.co/1200x600.png', alt: 'Collection of stylish clothes on display', hint: 'clothing collection' },
   { src: 'https://placehold.co/1200x600.png', alt: 'Man and woman posing in trendy outfits', hint: 'couple fashion' },
+  { src: 'https://placehold.co/1200x600.png', alt: 'Close-up of a stylish accessory', hint: 'fashion accessory' },
 ];
 
 const features = [
